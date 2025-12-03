@@ -1,5 +1,17 @@
 ---
 
+- name: cloudflare | Set dry-run mode
+  ansible.builtin.set_fact:
+    cloudflare_dry_run: "{{ ansible_check_mode | default(false) or (cloudflare_dry_run | default(false) | bool) }}"
+  tags:
+    - always
+
+- name: cloudflare | Display dry-run mode status
+  ansible.builtin.debug:
+    msg: "{{ '🔍 DRY-RUN MODE ENABLED - No changes will be made' if cloudflare_dry_run else '✓ DEPLOY MODE - Changes will be applied' }}"
+  tags:
+    - always
+
 - name: cloudflare | Build dynamic DNS records from platform variables
   ansible.builtin.set_fact:
     cloudflare_dns_records: |

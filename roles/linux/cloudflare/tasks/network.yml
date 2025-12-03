@@ -6,6 +6,26 @@
     - cloudflare_configuration
     - cloudflare_network
 
+- name: cloudflare network | Display dry-run health check creation
+  ansible.builtin.debug:
+    msg:
+      - "🔍 DRY-RUN: Would CREATE health check:"
+      - "  Name: {{ item.name }}"
+      - "  Address: {{ item.address }}"
+      - "  Type: {{ item.type | default('https') }}"
+      - "  Path: {{ item.path | default('/') }}"
+  loop: "{{ cloudflare_network_health_checks | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is defined
+    - cloudflare_network_health_checks | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_network
+    - cloudflare_health_checks
+
 - name: cloudflare network | create health checks
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/healthchecks"
@@ -37,6 +57,7 @@
     label: "{{ item.name }}"
   register: _health_checks_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_network_health_checks | length > 0
   changed_when: _health_checks_result.status == 200

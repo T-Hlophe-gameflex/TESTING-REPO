@@ -71,6 +71,28 @@
     - cloudflare_dns
     - cloudflare_dns_lookup
 
+- name: cloudflare dns | Display dry-run changes (no actual changes)
+  ansible.builtin.debug:
+    msg:
+      - "🔍 DRY-RUN: Would {{ 'UPDATE' if (item.1 is defined and item.1.json is defined and item.1.json.result | length > 0) else 'CREATE' }} DNS record:"
+      - "  Name: {{ target_zone_name if item.0.name == '@' else item.0.name ~ '.' ~ target_zone_name }}"
+      - "  Type: {{ item.0.type }}"
+      - "  Content: {{ item.0.content }}"
+      - "  TTL: {{ item.0.ttl | default(1) }}"
+      - "  Proxied: {{ item.0.proxied | default(false) }}"
+  loop: "{{ cloudflare_dns_records | default([]) | zip(dns_record_lookup.results | default([])) | list }}"
+  loop_control:
+    label: "{{ item.0.name }} ({{ item.0.type }})"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is defined
+    - cloudflare_dns_records is defined
+    - cloudflare_dns_records | length > 0
+    - item.1 is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_dns
+
 - name: cloudflare dns | Create or update DNS records
   ansible.builtin.uri:
     url: >-
@@ -100,6 +122,7 @@
   loop_control:
     label: "{{ item.0.name }} ({{ item.0.type }})"
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_dns_records is defined
     - cloudflare_dns_records | length > 0

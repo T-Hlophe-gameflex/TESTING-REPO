@@ -54,6 +54,20 @@
     - cloudflare_domain
     - cloudflare_ssl
 
+- name: cloudflare domain | Display dry-run SSL change
+  ansible.builtin.debug:
+    msg: "🔍 DRY-RUN: Would ENABLE Universal SSL for zone {{ cloudflare_zone_name }}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_domain_ssl.universal_ssl_enabled | default(true)
+    - cloudflare_zone_id is defined
+    - _universal_ssl_status.json.result.enabled is defined
+    - not _universal_ssl_status.json.result.enabled
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_ssl
+
 - name: cloudflare domain | enable universal SSL if not enabled
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/ssl/universal/settings"
@@ -68,6 +82,7 @@
     status_code: 200
     return_content: true
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_domain_ssl.universal_ssl_enabled | default(true)
     - cloudflare_zone_id is defined
     - _universal_ssl_status.json.result.enabled is defined

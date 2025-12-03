@@ -7,6 +7,24 @@
     - cloudflare_configuration
     - cloudflare_notifications
 
+- name: cloudflare notifications | Display dry-run email destination creation
+  ansible.builtin.debug:
+    msg:
+      - "🔍 DRY-RUN: Would CREATE email destination:"
+      - "  Name: {{ item.name }}"
+      - "  Email: {{ item.email }}"
+  loop: "{{ cloudflare_notification_email_destinations | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_account_id is defined
+    - cloudflare_notification_email_destinations | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_notifications
+    - cloudflare_email_destinations
+
 - name: cloudflare notifications | Create email destinations
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/accounts/{{ cloudflare_account_id }}/alerting/v3/destinations/email"
@@ -26,6 +44,7 @@
     label: "{{ item.name }}"
   register: _email_destinations_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_account_id is defined
     - cloudflare_notification_email_destinations | length > 0
   changed_when: _email_destinations_result.status == 200
