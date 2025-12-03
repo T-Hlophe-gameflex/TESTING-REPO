@@ -1,5 +1,5 @@
 ---
-# Auto-discover platforms from filesystem
+
 - name: Auto-discover platform files from directories
   ansible.builtin.find:
     paths:
@@ -147,7 +147,6 @@
   ansible.builtin.set_fact:
     awx_organization_id: "{{ org_query.json.results[0].id }}"
 
-# Create Cloudflare Credential Type
 - name: Create Cloudflare credential type
   awx.awx.credential_type:
     name: "Cloudflare API"
@@ -207,7 +206,6 @@
     - cloudflare_api_key is defined
     - cloudflare_account_id is defined
 
-# Create AWX Cluster Credential Type (for AWX-to-AWX authentication)
 - name: Create AWX cluster credential type
   awx.awx.credential_type:
     name: "{{ awx_credential_type_name }}"
