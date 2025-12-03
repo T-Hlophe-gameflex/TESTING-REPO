@@ -7,7 +7,7 @@ awx_project_name: "Cloudflare-DevOps"
 awx_project_description: "Cloudflare DNS and configuration management from Git"
 awx_project_scm_type: "git"
 awx_project_scm_url: "https://github.com/T-Hlophe-gameflex/TESTING-REPO.git"
-awx_project_scm_branch: "Cloudflare-configuration"
+awx_project_scm_branch: "main"
 awx_project_scm_clean: true
 awx_project_scm_delete_on_update: true
 awx_project_scm_update_on_launch: true
