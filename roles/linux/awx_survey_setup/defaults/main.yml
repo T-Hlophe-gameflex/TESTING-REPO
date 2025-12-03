@@ -149,6 +149,6 @@ platforms:
     number: "255"
     description: "Global Services Platform 255 (iforium.com)"
 
-default_zone: "iforium.com"
+default_zone: "route-game-flex.eu"
 default_scope: "DNS"
 default_dns_action: "deploy"
