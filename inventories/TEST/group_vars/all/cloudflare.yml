@@ -1,7 +1,7 @@
 ---
 # TEST Environment Platform Configuration
 
-default_platform_domain: "iforium.com"
+default_platform_domain: "route-game-flex.eu"
 default_location: "TEST"
 default_region: "Ireland"
 default_dns_ttl: 1
