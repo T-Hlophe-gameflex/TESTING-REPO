@@ -1,27 +1,19 @@
 ---
 cloudflare_notification_email_destinations:
-  - name: "{{ datacenter_code }}-devops-team"
-    email: "{{ cloudflare_notification_email | default('thami.hlophe@gamesglobal.com') }}"
-  
-  - name: "{{ datacenter_code }}-qa-team"
-    email: "{{ cloudflare_notification_email | default('thami.hlophe@gamesglobal.com') }}"
-
-cloudflare_notification_webhook_destinations:
-  - name: "{{ datacenter_code }}-teams-alerts"
-    url: "{{ cloudflare_webhook_url | default('https://hooks.teams.com/services/YOUR/' ~ datacenter_name ~ '/WEBHOOK') }}"
-    secret: "{{ cloudflare_webhook_secret | default('') }}"
+  - name: "cloudflare-devops-team"
+    email: "{{ cloudflare_notification_email }}"
 
 cloudflare_notification_policies: 
-  - name: "{{ datacenter_code }}-ssl-expiry"
-    description: "Notify when SSL certificates are expiring in {{ datacenter_name }}"
+  - name: "ssl-certificate-expiry"
+    description: "Notify when SSL certificates are expiring"
     enabled: true
     alert_type: "universal_ssl_event_type"
     mechanisms:
       email:
-        - "{{ datacenter_code }}-devops-team"
+        - "cloudflare-devops-team"
 
-  - name: "{{ datacenter_code }}-health-check-failures"
-    description: "Notify when health checks fail in {{ datacenter_name }}"
+  - name: "health-check-failures"
+    description: "Notify when health checks fail"
     enabled: true
     alert_type: "health_check_status_notification"
     filters:
@@ -30,6 +22,4 @@ cloudflare_notification_policies:
         - "{{ platform_id | lower }}-admin-health"
     mechanisms:
       email:
-        - "{{ datacenter_code }}-qa-team"
-      webhooks:
-        - "{{ datacenter_code }}-slack-alerts"
+        - "cloudflare-devops-team"

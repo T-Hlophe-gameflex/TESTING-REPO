@@ -1,4 +1,0 @@
----
-cloudflare_notification_email: "thami.hlophe@gamesglobal.com"
-cloudflare_webhook_url: "https://hooks.teams.com/services/YOUR/TEST/WEBHOOK"
-cloudflare_webhook_secret: ""

@@ -1,6 +1,7 @@
 ---
+# TEST Environment Platform Configuration
 
-default_platform_domain: "route-game-flex.eu"
+default_platform_domain: "iforium.com"
 default_location: "TEST"
 default_region: "Ireland"
 default_dns_ttl: 1
@@ -30,6 +31,7 @@ environment_domain_map:
   test: "iforium.com"
   global: "iforium.com"
 
+# Standard DNS Record Types (Global Defaults)
 standard_dns_record_types:
   - name: "api"
     ip_key: "api"
@@ -83,7 +85,7 @@ standard_dns_record_types:
     ip_key: "operatorwalletapi"
     comment: "Operator wallet API service"
 
-
+# Environment-Specific Settings
 test_environment_settings:
   ssl_mode: "off"
   always_use_https: false
@@ -93,3 +95,33 @@ production_environment_settings:
   ssl_mode: "full_strict"
   always_use_https: true
   dns_proxied: true
+
+# Cloudflare Notification Configuration
+cloudflare_notification_email: "gameflex@gamesglobal.com"
+
+cloudflare_notification_email_destinations:
+  - name: "cloudflare-devops-team"
+    email: "{{ cloudflare_notification_email }}"
+
+cloudflare_notification_policies:  
+  - name: "ssl-certificate-expiry"
+    alert_type: "universal_ssl_event_type"
+    enabled: true
+    description: "Alert when SSL certificates are about to expire"
+    filters:
+      enabled: ["true"]
+      event_type: ["expiration", "renewal", "error"]
+    mechanisms:
+      email:
+        - id: "cloudflare-devops-team"
+        
+  - name: "health-check-failures"
+    alert_type: "health_check_status_notification_event"
+    enabled: true
+    description: "Alert when health checks fail"
+    filters:
+      enabled: ["true"]
+      status: ["Unhealthy"]
+    mechanisms:
+      email:
+        - id: "cloudflare-devops-team"

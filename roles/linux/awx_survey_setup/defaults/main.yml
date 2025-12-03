@@ -3,8 +3,6 @@
 awx_host: "http://localhost:8081"
 awx_validate_certs: true
 awx_organization: "{{ awx_organization_override | default('gameflex') }}"
-
-# AWX Project Configuration
 awx_project_name: "Cloudflare-DevOps"
 awx_project_description: "Cloudflare DNS and configuration management from Git"
 awx_project_scm_type: "git"
@@ -14,36 +12,21 @@ awx_project_scm_clean: true
 awx_project_scm_delete_on_update: true
 awx_project_scm_update_on_launch: true
 awx_project_scm_update_cache_timeout: 0
-# Note: For private repositories, create a GitHub credential in AWX first:
-# 1. Go to Resources → Credentials → Add
-# 2. Name: "GitHub-Gameflex-DevOps"
-# 3. Credential Type: "Source Control"
-# 4. Username: your-github-username
-# 5. Password/Token: your-github-personal-access-token
-# Then set: awx_project_credential: "GitHub-Gameflex-DevOps"
-awx_project_credential: ""  # GitHub credential name (empty = public repo)
-
-# Existing AWX Resources
+awx_project_credential: ""  
 awx_inventory_name: "Gameflex-DevOps-Cloudflare"
-
-# AWX Credential Type and Credential Settings
 awx_credential_type_name: "AWX Cluster Authentication"
 awx_credential_type_description: "Credentials for connecting to remote AWX/Tower clusters"
-awx_create_credential_type: true  # Create the custom credential type
-awx_create_awx_credential: false  # Set to true to create AWX credential from awxcloudflare vault
-
-# AWX Cluster Credential Name (to be created in AWX)
+awx_create_credential_type: true  
+awx_create_awx_credential: false  
 awx_cluster_credential_name: "AWX-Cluster-Access"
-
-# Cloudflare API Credential (existing, used by cloudflare.yml playbook)
-cloudflare_credential_name: "Cloudflare-API-Token"
-cloudflare_api_url: "https://api.cloudflare.com/client/v4"
-
-# Job Template Settings
 awx_template_name: "Cloudflare-Deployment"
 awx_playbook_path: "cloudflare.yml"
 survey_enabled: true
-ask_credential_on_launch: true  # Allow selecting credentials at launch time
+ask_credential_on_launch: false  
+cloudflare_credential_name: "Cloudflare-API-Token"
+cloudflare_api_url: "https://api.cloudflare.com/client/v4"
+
+
 
 domains:
   - name: "game-flex.eu"
@@ -56,7 +39,6 @@ domains:
     description: "Iforium - Production, staging, and global services"
 
 platforms:
-  # EU Production Platforms (game-flex.eu)
   - id: "L008"
     env_type: "production"
     number: "008"

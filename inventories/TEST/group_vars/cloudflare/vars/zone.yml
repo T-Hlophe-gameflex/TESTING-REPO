@@ -10,7 +10,12 @@ cloudflare_zones:
     description: "Game Flex US - US production gaming"
     jump_start: false
     type: "full"
-  
+
+  - name: "route-game-flex.eu"
+    description: "Route Game Flex EU - IOM production gaming"
+    jump_start: false
+    type: "full"
+
   - name: "iforium.com"
     description: "Iforium - Production, staging, and global services"
     jump_start: false
