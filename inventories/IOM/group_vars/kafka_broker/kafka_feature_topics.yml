@@ -1,0 +1,17 @@
+---
+feature_topics:
+  - name: CoreFlex.Notification
+    partitions: 2
+    replication_factor: 3
+    min_insync_replicas: 2
+    segment_bytes: 104857600
+  - name: GameFlex.ExternalGames.EnrichedGameRoundSettlement
+    partitions: 8
+    replication_factor: 3
+    min_insync_replicas: 2
+    segment_bytes: 104857600
+  - name: "GameFlex.ExternalGames.BigWin"
+    partitions: 1
+    replication_factor: 3
+    min_insync_replicas: 2
+    segment_bytes: 104857600

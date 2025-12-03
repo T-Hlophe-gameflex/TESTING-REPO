@@ -1,0 +1,13 @@
+---
+kafka_connect_host: "coreflex-webapi.test-flex.us"
+kafka_connect_db_name_coreflex: "G000_CoreFlex"
+kafka_connect_db_name_exchangerate: "G000_ExchangeRate"
+kafka_connect_db_hostname: "10.50.103.32"
+kafka_connect_db_user: "svcDebeziumConnect"
+kafka_connect_db_port: 7022
+
+kafka_connectors:
+  - name: coreflex-exchangerate-debezium-source-2
+    template: connectors/coreflex-exchangerate-debezium-source-2.json.j2
+  - name: coreflex-reference-debezium-source-3
+    template: connectors/coreflex-reference-debezium-source-3.json.j2

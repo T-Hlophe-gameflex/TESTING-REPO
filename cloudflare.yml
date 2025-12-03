@@ -1,0 +1,7 @@
+---
+- name: Configure Cloudflare
+  hosts: cloudflare
+  gather_facts: yes
+  roles:
+    - role: linux/cloudflare
+      tags: [cloudflare]

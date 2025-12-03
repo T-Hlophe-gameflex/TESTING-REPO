@@ -1,0 +1,19 @@
+---
+
+cloudflare_zones:
+  - name: "game-flex.eu"
+    description: "Game Flex EU - European production gaming"
+    jump_start: false
+    type: "full"
+  
+  - name: "game-flex.us"
+    description: "Game Flex US - US production gaming"
+    jump_start: false
+    type: "full"
+  
+  - name: "iforium.com"
+    description: "Iforium - Production, staging, and global services"
+    jump_start: false
+    type: "full"
+
+cloudflare_zone_name: "{{ cloudflare_zone | default(platform_domain) | default('iforium.com') }}"

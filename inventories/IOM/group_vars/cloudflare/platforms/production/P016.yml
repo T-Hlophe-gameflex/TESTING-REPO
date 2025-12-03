@@ -1,0 +1,9 @@
+---
+platform_id: "P016"
+platform_type: "production"
+env_type: "production"
+region: "IOM"
+
+ipAddresses:
+  gameflex: "REPLACE_WITH_IOM_P016_GAMEFLEX_IP"
+  backoffice: "REPLACE_WITH_IOM_P016_BACKOFFICE_IP"

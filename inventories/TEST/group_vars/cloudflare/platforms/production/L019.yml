@@ -1,0 +1,12 @@
+---
+platform_id: "L019"
+platform_type: "production"
+env_type: "production"
+
+ipAddresses:
+  api: "5.62.95.36"
+  backoffice: "5.62.95.38"
+  gameflex: "5.62.95.40"
+  webapi: "5.62.95.37"
+  bonusplaythrough: "5.62.95.39"
+  gamemanager: "5.62.95.41"

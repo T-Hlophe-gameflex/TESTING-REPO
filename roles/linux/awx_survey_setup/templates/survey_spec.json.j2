@@ -1,0 +1,69 @@
+{
+  "name": "{{ survey_name | default('Cloudflare DNS Management') }}",
+  "description": "{{ survey_description | default('Deploy and update Cloudflare configurations from Git repository') }}",
+  "spec": [
+    {
+      "question_name": "Ticket Number",
+      "question_description": "Enter the ticket/change request number for audit tracking (e.g., JIRA-1234, CHG0012345)",
+      "variable": "ticket_number",
+      "type": "text",
+      "min": 3,
+      "max": 50,
+      "default": "",
+      "required": true
+    },
+    {
+      "question_name": "Domain Name",
+      "question_description": "Select the target domain to deploy configurations to",
+      "variable": "cloudflare_zone_name",
+      "type": "multiplechoice",
+      "choices": [
+        {% for domain in domains %}
+        "{{ domain.name }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+      "default": "{{ default_zone | default(domains[0].name) }}",
+      "required": true
+    },
+    {
+      "question_name": "DNS Action",
+      "question_description": "Deploy = Apply all configurations from repository, Update = Update existing configurations only",
+      "variable": "dns_action",
+      "type": "multiplechoice",
+      "choices": ["deploy", "update"],
+      "default": "{{ default_dns_action | default('deploy') }}",
+      "required": true
+    },
+    {
+      "question_name": "Platform Selection",
+      "question_description": "Select the platform to deploy (L=Production, S=Staging, T=Test, G=Global, P=Production IOM)",
+      "variable": "platform_id",
+      "type": "multiplechoice",
+      "choices": [
+        {% for platform in platforms | sort %}
+        "{{ platform }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "question_name": "Configuration Scope",
+      "question_description": "Select what to deploy: all=Everything, global=Zone+SSL/security, domain=SSL/cache/onion/geolocation, dns=DNS records only, network=Health checks, platform=Firewall, notifications=Alerts",
+      "variable": "cloudflare_scope",
+      "type": "multiplechoice",
+      "choices": ["all", "global", "domain", "dns", "network", "platform", "notifications"],
+      "default": "{{ default_scope | default('all') }}",
+      "required": true
+    },
+    {
+      "question_name": "Dry Run Mode",
+      "question_description": "Preview changes without applying them. Recommended for first-time deployments.",
+      "variable": "ansible_check_mode",
+      "type": "multiplechoice",
+      "choices": ["no", "yes"],
+      "default": "no",
+      "required": true
+    }
+  ]
+}

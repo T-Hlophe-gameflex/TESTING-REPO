@@ -1,0 +1,51 @@
+---
+
+
+cloudflare_network_health_checks_enabled: false
+cloudflare_network_health_checks:
+  - name: "{{ platform_id | lower }}-gameflex-health"
+    description: "Health check for {{ platform_id }} GameFlex platform"
+    type: "https"
+    address: "gameflex-{{ platform_id | lower }}.{{ platform_domain | default(cloudflare_zone_name) }}"
+    port: 443
+    path: "/health"
+    interval: 60
+    retries: 2
+    timeout: 10
+    expected_codes: "200,204"
+    check_regions:
+      - "WEU"
+      - "ENAM"
+    follow_redirects: true
+    allow_insecure: false
+  
+  - name: "{{ platform_id | lower }}-api-health"
+    description: "Health check for {{ platform_id }} API service"
+    type: "https"
+    address: "api-{{ platform_id | lower }}.{{ platform_domain | default(cloudflare_zone_name) }}"
+    port: 443
+    path: "/api/v1/health"
+    interval: 120
+    retries: 3
+    timeout: 10
+    expected_codes: "200,201"
+    check_regions:
+      - "WEU"
+      - "ENAM"
+    follow_redirects: true
+    allow_insecure: false
+
+cloudflare_network_load_balancer_pools: []
+cloudflare_network_load_balancers: []
+
+cloudflare_network_ip_geolocation:
+  enabled: true
+  description: "Enable IP Geolocation for traffic analytics"
+
+geo_countries_block:
+  - "CN"  # China
+  - "RU"  # Russia
+  - "KP"  # North Korea
+  - "IR"  # Iran
+
+geo_countries_allow: []

@@ -1,0 +1,8 @@
+---
+platform_id: "S017"
+platform_type: "staging"
+env_type: "staging"
+region: "IOM"
+
+ipAddresses:
+  gameflex: "REPLACE_WITH_IOM_S017_GAMEFLEX_IP"

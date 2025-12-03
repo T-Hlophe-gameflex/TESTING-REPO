@@ -1,0 +1,10 @@
+---
+platform_id: "L025"
+platform_type: "production"
+env_type: "production"
+
+ipAddresses:
+  api: "140.228.99.170"
+  backoffice: "140.228.99.172"
+  gameflex: "140.228.99.171"
+  webapi: "140.228.99.169"

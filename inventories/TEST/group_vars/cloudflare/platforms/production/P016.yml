@@ -1,0 +1,7 @@
+---
+platform_id: "P016"
+platform_type: "production"
+env_type: "production"
+
+ipAddresses:
+  gamemanager: "81.88.167.90"

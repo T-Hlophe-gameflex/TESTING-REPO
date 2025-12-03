@@ -1,0 +1,160 @@
+---
+
+cloudflare_page_rules:
+  - priority: 1
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L011&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 2
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L012&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 3
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L014&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 4
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L015&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 5
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L016&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 6
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L017&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 7
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L018&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 8
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "https://backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L019&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 9
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "https://backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L020&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 10
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "https://backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L021&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+  
+  - priority: 11
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "backoffice.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=L008&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://gameflexbackoffice.marathonbet.com/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+
+  - priority: 12
+    status: "active"
+    targets:
+      - target: "url"
+        constraint:
+          operator: "matches"
+          value: "backoffice-t009.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?PlatformKey=T009&AccountID=*&GameRoundID=*"
+    actions:
+      - id: "forwarding_url"
+        value:
+          url: "https://backoffice-t009.route-game-flex.eu/accounts/ExternalGameRoundResults.Admin?AccountID=$1&GameRoundID=$2"
+          status_code: 302
+
+

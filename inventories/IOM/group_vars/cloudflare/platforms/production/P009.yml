@@ -1,0 +1,11 @@
+---
+platform_id: "P009"
+platform_type: "production"
+env_type: "production"
+region: "IOM"
+
+ipAddresses:
+  gameflex: "REPLACE_WITH_IOM_P009_GAMEFLEX_IP"
+  backoffice: "REPLACE_WITH_IOM_P009_BACKOFFICE_IP"
+  webapi: "REPLACE_WITH_IOM_P009_WEBAPI_IP"
+  gamemanager: "REPLACE_WITH_IOM_P009_GAMEMANAGER_IP"

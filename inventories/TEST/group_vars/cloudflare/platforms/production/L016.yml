@@ -1,0 +1,23 @@
+---
+platform_id: "L016"
+platform_type: "production"
+env_type: "production"
+
+ipAddresses:
+  main: "5.62.94.161"
+  backoffice: "5.62.94.161"
+
+dns_record_types:
+  - name: "@"
+    ip_key: "main"
+    comment: "Root domain"
+  
+  - name: "www"
+    type: "CNAME"
+    content: "route-game-flex.eu"
+    comment: "WWW alias to root domain"
+  
+  - name: "api-l016"
+    type: "CNAME"
+    content: "api-l016.game-flex.eu"
+    comment: "API service via game-flex.eu"

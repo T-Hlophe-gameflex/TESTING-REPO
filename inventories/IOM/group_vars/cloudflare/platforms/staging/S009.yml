@@ -1,0 +1,22 @@
+---
+platform_id: "S009"
+platform_type: "staging"
+env_type: "staging"
+region: "IOM"
+
+ipAddresses:
+  gameflex: "REPLACE_WITH_IOM_S009_GAMEFLEX_IP"
+  backoffice: "REPLACE_WITH_IOM_S009_BACKOFFICE_IP"
+  webapi: "REPLACE_WITH_IOM_S009_WEBAPI_IP"
+  gamemanager: "REPLACE_WITH_IOM_S009_GAMEMANAGER_IP"
+  bonusplaythrough: "REPLACE_WITH_IOM_S009_BONUSPLAYTHROUGH_IP"
+
+dns_record_types:
+  - name: "gameflex"
+    type: "CNAME"
+    content: "REPLACE_WITH_CLOUDFRONT_DISTRIBUTION"
+    comment: "GameFlex via CloudFront CDN"
+  
+  - name: "gameflex-origin"
+    ip_key: "gameflex"
+    comment: "GameFlex origin server"

@@ -1,0 +1,7 @@
+---
+platform_id: "S016"
+platform_type: "staging"
+env_type: "staging"
+
+ipAddresses:
+  gamemanager: "81.88.167.90"

@@ -1,0 +1,13 @@
+---
+rabbitmq_vhosts_pugs:
+  - pugs
+
+rabbitmq_users_pugs:
+  - user: pugs-distributor
+    password: "{{ rabbitmq_pugsdist_password }}"
+    vhost: pugs
+    tags: pugs
+  - user: pugs-publisher
+    password: "{{ rabbitmq_pugspub_password }}"
+    vhost: pugs
+    tags: pugs

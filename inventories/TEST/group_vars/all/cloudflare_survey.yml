@@ -1,0 +1,18 @@
+---
+# AWX Configuration
+awx_host: "http://localhost:8081"
+awx_organization_override: "Default"
+awx_inventory_name: "TEST"
+awx_inventory_description: "Inventory for Cloudflare DNS management"
+awx_project_name: "TEST-Cloudflare"
+awx_project_description: "Cloudflare automation for multi-region platforms"
+awx_project_local_path: "cloudflare_test"
+awx_template_name: "Cloudflare-Deployment"
+awx_playbook_path: "cloudflare.yml"
+awx_credential_name: "Cloudflare-API-Token"
+
+# Default Values
+default_zone: "iforium.com"
+default_scope: "dns"
+default_dns_action: "deploy"
+

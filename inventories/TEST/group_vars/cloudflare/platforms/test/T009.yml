@@ -1,0 +1,11 @@
+---
+platform_id: "T009"
+platform_type: "test"
+env_type: "test"
+
+ipAddresses:
+  main: "5.62.94.70"
+  api: "5.62.94.170"
+  backoffice: "5.62.94.171"
+  gameflex: "5.62.94.172"
+  webapi: "5.62.94.173"

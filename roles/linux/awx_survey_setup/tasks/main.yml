@@ -1,0 +1,318 @@
+---
+# Auto-discover platforms from filesystem
+- name: Auto-discover platform files from directories
+  ansible.builtin.find:
+    paths:
+      - "{{ playbook_dir }}/inventories/TEST/group_vars/cloudflare/platforms/production"
+      - "{{ playbook_dir }}/inventories/TEST/group_vars/cloudflare/platforms/staging"
+      - "{{ playbook_dir }}/inventories/TEST/group_vars/cloudflare/platforms/global"
+      - "{{ playbook_dir }}/inventories/TEST/group_vars/cloudflare/platforms/test"
+    patterns: "*.yml"
+    recurse: no
+  register: platform_files
+  check_mode: no
+
+- name: Build platforms list from discovered files
+  ansible.builtin.set_fact:
+    platforms: "{{ platform_files.files | map(attribute='path') | map('basename') | map('regex_replace', '\\.yml$', '') | list }}"
+
+- name: Sort platforms by prefix (G, L, P, S, T) and numeric value
+  ansible.builtin.set_fact:
+    platforms_sorted: |
+      {%- set platform_groups = {'G': [], 'L': [], 'P': [], 'S': [], 'T': []} -%}
+      {%- for platform in platforms -%}
+        {%- set prefix = platform[0] -%}
+        {%- set number = platform[1:] | int -%}
+        {%- set _ = platform_groups[prefix].append({'id': platform, 'number': number}) -%}
+      {%- endfor -%}
+      {%- set sorted_platforms = [] -%}
+      {%- for prefix in ['G', 'L', 'P', 'S', 'T'] -%}
+        {%- for item in (platform_groups[prefix] | sort(attribute='number')) -%}
+          {%- set _ = sorted_platforms.append(item.id) -%}
+        {%- endfor -%}
+      {%- endfor -%}
+      {{ sorted_platforms }}
+
+- name: Set final platforms list
+  ansible.builtin.set_fact:
+    platforms: "{{ platforms_sorted | from_yaml }}"
+
+- name: Build domains list from cloudflare_domains
+  ansible.builtin.set_fact:
+    domains: "{{ cloudflare_domains }}"
+  when: cloudflare_domains is defined
+
+- name: Validate required variables
+  ansible.builtin.assert:
+    that:
+      - domains is defined and domains | length > 0
+      - platforms is defined and platforms | length > 0
+      - awx_project_name is defined
+      - awx_inventory_name is defined
+      - awx_template_name is defined
+      - awx_playbook_path is defined
+      - awx_username is defined
+      - awx_password is defined
+    fail_msg: "Missing required variables. Check role defaults and inventory credentials"
+    success_msg: "All required variables validated"
+
+- name: Display discovered configuration
+  ansible.builtin.debug:
+    msg:
+      - "Discovered {{ platforms | length }} platforms: {{ platforms | join(', ') }}"
+      - "Configured {{ domains | length }} domains: {{ domains | map(attribute='name') | join(', ') }}"
+
+- name: Check if project exists
+  ansible.builtin.uri:
+    url: "{{ awx_host }}/api/v2/projects/?name={{ awx_project_name | urlencode }}"
+    method: GET
+    url_username: "{{ awx_username }}"
+    url_password: "{{ awx_password }}"
+    force_basic_auth: yes
+    validate_certs: "{{ awx_validate_certs }}"
+    status_code: 200
+  register: project_query
+  check_mode: no
+
+- name: Create or update project
+  awx.awx.project:
+    name: "{{ awx_project_name }}"
+    description: "{{ awx_project_description }}"
+    organization: "{{ awx_organization }}"
+    scm_type: "{{ awx_project_scm_type }}"
+    scm_url: "{{ awx_project_scm_url }}"
+    scm_branch: "{{ awx_project_scm_branch }}"
+    scm_clean: "{{ awx_project_scm_clean }}"
+    scm_delete_on_update: "{{ awx_project_scm_delete_on_update }}"
+    scm_update_on_launch: "{{ awx_project_scm_update_on_launch }}"
+    scm_update_cache_timeout: "{{ awx_project_scm_update_cache_timeout }}"
+    wait: false
+    state: present
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  register: project_result
+
+- name: Update project from SCM
+  awx.awx.project_update:
+    project: "{{ awx_project_name }}"
+    wait: true
+    timeout: 300
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  register: project_update_result
+  ignore_errors: true
+
+- name: Set project ID fact
+  ansible.builtin.set_fact:
+    awx_project_id: "{{ project_result.id }}"
+
+- name: Verify inventory exists
+  ansible.builtin.uri:
+    url: "{{ awx_host }}/api/v2/inventories/?name={{ awx_inventory_name | urlencode }}"
+    method: GET
+    url_username: "{{ awx_username }}"
+    url_password: "{{ awx_password }}"
+    force_basic_auth: yes
+    validate_certs: "{{ awx_validate_certs }}"
+    status_code: 200
+  register: inventory_query
+  check_mode: no
+  failed_when: inventory_query.json.count == 0
+
+- name: Display project and inventory status
+  ansible.builtin.debug:
+    msg:
+      - "Project: {{ awx_project_name }} (ID: {{ awx_project_id }}) - {{ 'Created' if project_result is changed else 'Exists' }}"
+      - "SCM URL: {{ awx_project_scm_url }}"
+      - "Branch: {{ awx_project_scm_branch }}"
+      - "Inventory: {{ awx_inventory_name }} (ID: {{ inventory_query.json.results[0].id }})"
+
+- name: Resolve organization ID
+  ansible.builtin.uri:
+    url: "{{ awx_host }}/api/v2/organizations/?name={{ awx_organization | urlencode }}"
+    method: GET
+    url_username: "{{ awx_username }}"
+    url_password: "{{ awx_password }}"
+    force_basic_auth: yes
+    validate_certs: "{{ awx_validate_certs }}"
+    status_code: 200
+  register: org_query
+  check_mode: no
+
+- name: Set organization ID
+  ansible.builtin.set_fact:
+    awx_organization_id: "{{ org_query.json.results[0].id }}"
+
+# Create Cloudflare Credential Type
+- name: Create Cloudflare credential type
+  awx.awx.credential_type:
+    name: "Cloudflare API"
+    description: "Cloudflare API credentials for DNS and zone management"
+    kind: cloud
+    inputs:
+      fields:
+        - id: cloudflare_api_email
+          type: string
+          label: "Cloudflare API Email"
+          help_text: "Email address associated with Cloudflare account"
+        - id: cloudflare_api_key
+          type: string
+          label: "Cloudflare API Key"
+          secret: true
+          help_text: "Global API Key from Cloudflare dashboard"
+        - id: cloudflare_account_id
+          type: string
+          label: "Cloudflare Account ID"
+          help_text: "Your Cloudflare Account ID"
+      required:
+        - cloudflare_api_email
+        - cloudflare_api_key
+        - cloudflare_account_id
+    injectors:
+      env:
+        CLOUDFLARE_API_EMAIL: "{{ '{{' }} cloudflare_api_email {{ '}}' }}"
+        CLOUDFLARE_API_KEY: "{{ '{{' }} cloudflare_api_key {{ '}}' }}"
+        CLOUDFLARE_ACCOUNT_ID: "{{ '{{' }} cloudflare_account_id {{ '}}' }}"
+      extra_vars:
+        cloudflare_api_email: "{{ '{{' }} cloudflare_api_email {{ '}}' }}"
+        cloudflare_api_key: "{{ '{{' }} cloudflare_api_key {{ '}}' }}"
+        cloudflare_account_id: "{{ '{{' }} cloudflare_account_id {{ '}}' }}"
+    state: present
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password }}"
+    validate_certs: "{{ awx_validate_certs }}"
+
+- name: Create Cloudflare credential
+  awx.awx.credential:
+    name: "{{ cloudflare_credential_name }}"
+    description: "Cloudflare API credentials for automated DNS management"
+    organization: "{{ awx_organization }}"
+    credential_type: "Cloudflare API"
+    inputs:
+      cloudflare_api_email: "{{ cloudflare_api_email }}"
+      cloudflare_api_key: "{{ cloudflare_api_key }}"
+      cloudflare_account_id: "{{ cloudflare_account_id }}"
+    state: present
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  when:
+    - cloudflare_api_email is defined
+    - cloudflare_api_key is defined
+    - cloudflare_account_id is defined
+
+# Create AWX Cluster Credential Type (for AWX-to-AWX authentication)
+- name: Create AWX cluster credential type
+  awx.awx.credential_type:
+    name: "{{ awx_credential_type_name }}"
+    description: "{{ awx_credential_type_description }}"
+    kind: cloud
+    inputs:
+      fields:
+        - id: awx_cluster_url
+          type: string
+          label: "AWX Cluster URL"
+          help_text: "Full URL to AWX/Tower cluster (e.g., https://awx.example.com)"
+        - id: awx_cluster_username
+          type: string
+          label: "AWX Username"
+          help_text: "Username for AWX cluster authentication"
+        - id: awx_cluster_password
+          type: string
+          label: "AWX Password"
+          secret: true
+          help_text: "Password for AWX cluster authentication"
+        - id: awx_cluster_verify_ssl
+          type: boolean
+          label: "Verify SSL"
+          help_text: "Verify SSL certificates when connecting to AWX cluster"
+      required:
+        - awx_cluster_url
+        - awx_cluster_username
+        - awx_cluster_password
+    injectors:
+      env:
+        AWX_CLUSTER_URL: "{{ '{{' }} awx_cluster_url {{ '}}' }}"
+        AWX_CLUSTER_USERNAME: "{{ '{{' }} awx_cluster_username {{ '}}' }}"
+        AWX_CLUSTER_PASSWORD: "{{ '{{' }} awx_cluster_password {{ '}}' }}"
+        AWX_CLUSTER_VERIFY_SSL: "{{ '{{' }} awx_cluster_verify_ssl | default('true') {{ '}}' }}"
+      extra_vars:
+        awx_cluster_url: "{{ '{{' }} awx_cluster_url {{ '}}' }}"
+        awx_cluster_username: "{{ '{{' }} awx_cluster_username {{ '}}' }}"
+        awx_cluster_password: "{{ '{{' }} awx_cluster_password {{ '}}' }}"
+        awx_cluster_verify_ssl: "{{ '{{' }} awx_cluster_verify_ssl | default(true) {{ '}}' }}"
+    state: present
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  when: awx_create_credential_type | default(true)
+
+- name: Create AWX cluster credential from vault
+  awx.awx.credential:
+    name: "{{ awx_cluster_credential_name }}"
+    description: "Credentials for accessing remote AWX clusters"
+    organization: "{{ awx_organization }}"
+    credential_type: "{{ awx_credential_type_name }}"
+    inputs:
+      awx_cluster_url: "{{ awx_cluster_url | default('') }}"
+      awx_cluster_username: "{{ awx_cluster_username | default('') }}"
+      awx_cluster_password: "{{ awxcloudflare | default('') }}"
+      awx_cluster_verify_ssl: "{{ awx_cluster_verify_ssl | default(true) }}"
+    state: present
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password }}"
+    validate_certs: "{{ awx_validate_certs }}"
+  when:
+    - awx_create_awx_credential | default(false)
+    - awxcloudflare is defined
+
+- name: Generate survey spec
+  ansible.builtin.template:
+    src: survey_spec.json.j2
+    dest: /tmp/survey_spec_cloudflare.json
+
+- name: Load survey spec
+  ansible.builtin.set_fact:
+    survey_spec_json: "{{ lookup('file', '/tmp/survey_spec_cloudflare.json') | from_json }}"
+
+- name: Create or update Cloudflare job template
+  awx.awx.job_template:
+    name: "{{ awx_template_name }}"
+    description: "Cloudflare DNS and configuration deployment"
+    job_type: "run"
+    organization: "{{ awx_organization }}"
+    project: "{{ awx_project_name }}"
+    inventory: "{{ awx_inventory_name }}"
+    playbook: "{{ awx_playbook_path }}"
+    credentials:
+      - "{{ cloudflare_credential_name }}"
+    verbosity: 1
+    limit: ""
+    forks: 5
+    timeout: 0
+    allow_simultaneous: false
+    ask_credential_on_launch: "{{ ask_credential_on_launch }}"
+    ask_inventory_on_launch: false
+    ask_limit_on_launch: false
+    ask_tags_on_launch: false
+    ask_skip_tags_on_launch: false
+    ask_variables_on_launch: false
+    survey_enabled: "{{ survey_enabled }}"
+    survey_spec: "{{ survey_spec_json }}"
+    state: present
+    controller_host: "{{ awx_host }}"
+    controller_username: "{{ awx_username }}"
+    controller_password: "{{ awx_password }}"
+    validate_certs: "{{ awx_validate_certs }}"
+
+- name: Display template status
+  ansible.builtin.debug:
+    msg: "Job template updated: {{ awx_template_name }}"

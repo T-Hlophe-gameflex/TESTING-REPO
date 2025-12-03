@@ -1,0 +1,10 @@
+---
+platform_id: "P009"
+platform_type: "production"
+env_type: "production"
+
+ipAddresses:
+  gameflex: "81.88.167.72"
+  backoffice: "81.88.167.90"
+  webapi: "81.88.167.90"
+  gamemanager: "81.88.167.90"

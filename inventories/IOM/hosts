@@ -1,0 +1,30 @@
+[windows]
+
+[windows:vars]
+ansible_winrm_kerberos_delegation = true
+ansible_port = 5985
+ansible_connection = winrm
+ansible_winrm_server_cert_validation = ignore
+ansible_winrm_transport = ntlm
+
+[linux:children]
+ansible
+kafka_broker
+rabbitmq
+cloudflare
+
+[ansible]
+sem-001-iom.iom.iforium.com ansible_host=10.50.108.35
+
+[cloudflare]
+sem-001-iom.iom.iforium.com ansible_host=10.50.108.35
+
+[kafka_broker]
+kaf-201-iom.iom.iforium.com ansible_host=10.50.103.90
+kaf-202-iom.iom.iforium.com ansible_host=10.50.103.91
+kaf-203-iom.iom.iforium.com ansible_host=10.50.103.92
+
+[rabbitmq]
+rabmq-001-iom.iom.iforium.com ansible_host=10.50.103.54
+rabmq-002-iom.iom.iforium.com ansible_host=10.50.103.55
+rabmq-003-iom.iom.iforium.com ansible_host=10.50.103.56

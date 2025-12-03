@@ -1,0 +1,16 @@
+---
+cloudflare_zone_settings:
+  paused: false
+  type: "full"
+  development_mode: false
+  security_level: "medium"
+  browser_cache_ttl: 14400  # 4 hours
+  challenge_ttl: 1800  # 30 minutes
+  privacy_pass: true
+  origin_error_page_pass_thru: false
+  sort_query_string_for_cache: false
+  email_obfuscation: true
+  server_side_exclude: true
+  hotlink_protection: false
+  automatic_https_rewrites: true
+  opportunistic_encryption: true

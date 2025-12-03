@@ -1,0 +1,6 @@
+---
+- name: Setup AWX Cloudflare Template
+  hosts: cloudflare
+  gather_facts: false
+  roles:
+    - role: linux/awx_survey_setup

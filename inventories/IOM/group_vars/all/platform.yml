@@ -1,0 +1,97 @@
+---
+# IOM Environment Platform Configuration
+
+default_platform_domain: "iforium.com"
+default_location: "IOM"
+default_region: "Isle of Man"
+default_dns_ttl: 1
+default_dns_proxied: true
+default_ssl_mode: "full_strict"
+default_always_use_https: true
+
+# Domain Definitions
+cloudflare_domains:
+  - name: "game-flex.eu"
+    description: "Game Flex EU - European production gaming"
+  - name: "route-game-flex.eu"
+    description: "Route Game Flex EU - IOM production gaming"
+  - name: "iforium.com"
+    description: "Iforium - Production, staging, and global services"
+
+# Environment to Domain Mapping
+environment_domain_map:
+  production:
+    eu: "game-flex.eu"
+    iom: "iforium.com"
+    route: "route-game-flex.eu"
+  staging: "iforium.com"
+  test: "iforium.com"
+  global: "iforium.com"
+
+# Standard DNS Record Types (Global Defaults)
+standard_dns_record_types:
+  - name: "api"
+    ip_key: "api"
+    comment: "API service"
+    
+  - name: "webapi"
+    ip_key: "webapi"
+    comment: "Web API service"
+    
+  - name: "gpwebapi"
+    ip_key: "gpwebapi"
+    comment: "GP Web API service"
+  
+  - name: "gameflex"
+    ip_key: "gameflex"
+    comment: "GameFlex platform"
+    
+  - name: "backoffice"
+    ip_key: "backoffice"
+    comment: "Backoffice admin portal"
+  
+  - name: "portal"
+    ip_key: "portal"
+    comment: "Player portal"
+    
+  - name: "mobile"
+    ip_key: "mobile"
+    comment: "Mobile API"
+    
+  - name: "integration"
+    ip_key: "integration"
+    comment: "Integration API"
+    
+  - name: "reporting"
+    ip_key: "reporting"
+    comment: "Reporting service"
+    
+  - name: "admin"
+    ip_key: "admin"
+    comment: "Admin interface"
+  
+  - name: "gamemanager"
+    ip_key: "gamemanager"
+    comment: "Game manager service"
+  
+  - name: "bonusplaythrough"
+    ip_key: "bonusplaythrough"
+    comment: "Bonus playthrough service"
+  
+  - name: "operatorwalletapi"
+    ip_key: "operatorwalletapi"
+    comment: "Operator wallet API service"
+
+# Environment-Specific Settings
+test_environment_settings:
+  ssl_mode: "off"
+  always_use_https: false
+  dns_proxied: true
+
+production_environment_settings:
+  ssl_mode: "full_strict"
+  always_use_https: true
+  dns_proxied: true
+
+# Legacy datacenter reference (for backwards compatibility)
+datacentre: iom

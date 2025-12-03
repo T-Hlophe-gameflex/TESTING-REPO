@@ -1,0 +1,4 @@
+---
+nexus_url: "nexus-iom.iforium.com:{{ nexus_port }}"
+nexus_port: 18081
+nexus_user: "ansible"

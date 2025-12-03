@@ -1,0 +1,93 @@
+---
+
+cloudflare_domain_ssl:
+  universal_ssl_enabled: true
+  custom_certificates: []
+  ssl_mode: "{{ ssl_mode | default('full_strict') }}"
+  min_tls_version: "1.2"
+  tls_1_3: "on"
+  always_use_https: "{{ always_use_https | default(true) }}"
+
+cloudflare_domain_argo:
+  enabled: true  
+  tiered_caching: true
+  smart_routing: true
+
+cloudflare_domain_cache:
+  cache_rules:
+    - description: "Bypass cache for test pages"
+      expression: '(http.request.uri.path contains "TestPage.html")'
+      action: "set_cache_settings"
+      action_parameters:
+        cache: false
+        browser_ttl:
+          mode: "override_origin"
+          default: 30
+    
+    - description: "Bypass cache for gamelaunch test pages"
+      expression: '(http.request.uri.path eq "/gamelaunch/v1/testPage.html")'
+      action: "set_cache_settings"
+      action_parameters:
+        cache: false
+        browser_ttl:
+          mode: "override_origin"
+          default: 30
+    
+    - description: "Cache gamelaunch express JS files"
+      expression: '(http.request.uri.path contains "/gamelaunch/express/" and http.request.uri.path.extension eq "js")'
+      action: "set_cache_settings"
+      action_parameters:
+        cache: true
+        edge_ttl:
+          mode: "override_origin"
+          default: 300
+        browser_ttl:
+          mode: "override_origin"
+          default: 300
+    
+    - description: "Cache all HTML files"
+      expression: '(http.request.uri.path.extension eq "html")'
+      action: "set_cache_settings"
+      action_parameters:
+        cache: true
+        edge_ttl:
+          mode: "override_origin"
+          default: 300
+        browser_ttl:
+          mode: "override_origin"
+          default: 300
+    
+    - description: "Cache static assets aggressively"
+      expression: '(http.request.uri.path contains "/static/")'
+      action: "set_cache_settings"
+      action_parameters:
+        cache: true
+        edge_ttl:
+          mode: "override_origin"
+          default: 3600
+        browser_ttl:
+          mode: "override_origin"
+          default: 1800
+    
+    - description: "Bypass cache for API endpoints"
+      expression: '(http.request.uri.path contains "/api/")'
+      action: "set_cache_settings"
+      action_parameters:
+        cache: false
+
+  purge_patterns: []
+
+cloudflare_domain_origin:
+  true_client_ip_header: false
+  always_online: false
+  origin_error_page_pass_thru: false
+  sort_query_string_for_cache: false
+
+cloudflare_domain_dnssec:
+  enabled: false 
+
+cloudflare_domain_onion_routing:
+  enabled: true
+  description: "Enable Onion Routing for Tor users to access the site securely"
+
+cloudflare_domain_custom_pages: []

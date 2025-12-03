@@ -1,0 +1,47 @@
+---
+validate_api_token: true
+
+cloudflare_debug: true
+
+cloudflare_global_ssl_settings:
+  ssl: "off"
+  min_tls_version: "1.0"
+  tls_1_3: "off"
+  opportunistic_encryption: "off"
+  automatic_https_rewrites: "off"
+  always_use_https: "off"
+
+cloudflare_global_security_settings:
+  security_level: "medium"
+  browser_check: "on"
+  challenge_ttl: 1800
+  privacy_pass: "on"
+  security_header:
+    strict_transport_security:
+      enabled: false
+      max_age: 0
+      include_subdomains: false
+      preload: false
+      nosniff: true
+
+cloudflare_global_ddos_settings:
+  ddos_protection: "on"
+  rate_limiting_enabled: false
+
+cloudflare_global_performance_settings:
+  cache_level: "aggressive"
+  browser_cache_ttl: 14400
+  minify:
+    css: "off"
+    html: "off"
+    js: "off"
+  brotli: "off"
+  early_hints: "off"
+  http3: "off"
+  zero_rtt: "off"
+
+cloudflare_global_network_settings:
+  ipv6: "on"
+  websockets: "on"
+  pseudo_ipv4: "off"
+  ip_geolocation: "on"

@@ -1,0 +1,407 @@
+---
+
+- name: cloudflare domain | Get zone ID for domain operations
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones?name={{ effective_zone_name }}"
+    method: GET
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    return_content: yes
+    status_code: 200
+  register: _zone_lookup
+  when: cloudflare_scope | default('all') in ['all', 'domain', 'dns']
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+
+- name: cloudflare domain | Set zone ID fact
+  ansible.builtin.set_fact:
+    cloudflare_zone_id: "{{ _zone_lookup.json.result[0].id }}"
+  when: 
+    - cloudflare_scope | default('all') in ['all', 'domain', 'dns']
+    - _zone_lookup is defined
+    - _zone_lookup.json is defined
+    - _zone_lookup.json.result | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+
+- name: cloudflare domain | display configuration banner
+  ansible.builtin.debug:
+    msg: "Configuring domain-level settings for {{ cloudflare_zone_name }}..."
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+
+- name: cloudflare domain | check universal SSL status
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/ssl/universal/settings"
+    method: GET
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    status_code: 200
+    return_content: true
+  register: _universal_ssl_status
+  when:
+    - cloudflare_domain_ssl.universal_ssl_enabled | default(true)
+    - cloudflare_zone_id is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_ssl
+
+- name: cloudflare domain | enable universal SSL if not enabled
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/ssl/universal/settings"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      enabled: true
+    status_code: 200
+    return_content: true
+  when:
+    - cloudflare_domain_ssl.universal_ssl_enabled | default(true)
+    - cloudflare_zone_id is defined
+    - _universal_ssl_status.json.result.enabled is defined
+    - not _universal_ssl_status.json.result.enabled
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_ssl
+
+- name: cloudflare domain | configure Argo smart routing
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/argo/smart_routing"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      value: "{{ 'on' if cloudflare_domain_argo.enabled else 'off' }}"
+    status_code: 200
+    return_content: true
+  register: _argo_result
+  when:
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_argo is defined
+  failed_when: false  
+  changed_when: _argo_result.status == 200
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_argo
+
+- name: cloudflare domain | configure Argo tiered caching
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/argo/tiered_caching"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      value: "{{ 'on' if cloudflare_domain_argo.tiered_caching else 'off' }}"
+    status_code: 200
+    return_content: true
+  register: _argo_tiered_result
+  when:
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_argo is defined
+    - cloudflare_domain_argo.enabled
+  failed_when: false  
+  changed_when: _argo_tiered_result.status == 200
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_argo
+
+- name: cloudflare domain | apply cache rules via rulesets API
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/rulesets/phases/http_request_cache_settings/entrypoint"
+    method: PUT
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      rules: "{{ cloudflare_domain_cache.cache_rules }}"
+    status_code: [200, 201]
+    return_content: true
+  register: _cache_rules_result
+  when:
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_cache.cache_rules is defined
+    - cloudflare_domain_cache.cache_rules | length > 0
+  failed_when: false
+  changed_when: _cache_rules_result.status in [200, 201]
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_cache
+
+- name: cloudflare domain | configure origin server settings
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/settings/{{ item.key }}"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      value: "{{ item.value }}"
+    status_code: 200
+    return_content: true
+  loop:
+    - key: "true_client_ip_header"
+      value: "{{ 'on' if cloudflare_domain_origin.true_client_ip_header else 'off' }}"
+    - key: "always_online"
+      value: "{{ 'on' if cloudflare_domain_origin.always_online else 'off' }}"
+    - key: "origin_error_page_pass_thru"
+      value: "{{ 'on' if cloudflare_domain_origin.origin_error_page_pass_thru else 'off' }}"
+    - key: "sort_query_string_for_cache"
+      value: "{{ 'on' if cloudflare_domain_origin.sort_query_string_for_cache else 'off' }}"
+  loop_control:
+    label: "{{ item.key }}"
+  register: _origin_settings_result
+  when:
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_origin is defined
+  failed_when: false 
+  changed_when: _origin_settings_result.status == 200
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_origin
+
+- name: cloudflare domain | configure DNSSEC
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/dnssec"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      status: "{{ 'active' if cloudflare_domain_dnssec.enabled else 'disabled' }}"
+    status_code: 200
+    return_content: true
+  register: _dnssec_result
+  when:
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_dnssec is defined
+    - cloudflare_domain_dnssec.enabled is defined
+  failed_when: false  
+  changed_when: _dnssec_result.status == 200
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_dnssec
+
+- name: cloudflare domain | enable Onion Routing (Tor support)
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/settings/opportunistic_onion"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      value: "{{ 'on' if cloudflare_domain_onion_routing.enabled else 'off' }}"
+    status_code: [200, 400]
+    return_content: true
+  register: _onion_routing_result
+  when:
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_onion_routing is defined
+    - cloudflare_domain_onion_routing.enabled is defined
+  changed_when: 
+    - _onion_routing_result.status == 200
+    - _onion_routing_result.json.success | default(false)
+  failed_when: false
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_onion_routing
+
+- name: cloudflare domain | display Onion Routing status
+  ansible.builtin.debug:
+    msg:
+      - "Onion Routing (Tor) Configuration:"
+      - "  Status Code: {{ _onion_routing_result.status | default('N/A') }}"
+      - "  Success: {{ _onion_routing_result.json.success | default('N/A') }}"
+      - "  Setting Value: {{ _onion_routing_result.json.result.value | default('N/A') }}"
+      - "  Errors: {{ _onion_routing_result.json.errors | default([]) }}"
+      - "  Messages: {{ _onion_routing_result.json.messages | default([]) }}"
+  when:
+    - _onion_routing_result is defined
+    - _onion_routing_result.json is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_onion_routing
+
+- name: cloudflare domain | display DNSSEC details
+  ansible.builtin.debug:
+    msg:
+      - "DNSSEC Status: {{ _dnssec_result.json.result.status | default('N/A') }}"
+      - "DS Record: {{ _dnssec_result.json.result.ds | default('Not available') }}"
+  when:
+    - _dnssec_result is defined
+    - _dnssec_result.json is defined
+    - cloudflare_domain_dnssec.enabled | default(false)
+    - cloudflare_debug | default(false)
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_dnssec
+
+- name: cloudflare domain | purge cache patterns if specified
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/purge_cache"
+    method: POST
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      files: "{{ cloudflare_domain_cache.purge_patterns }}"
+    status_code: 200
+    return_content: true
+  register: _cache_purge_result
+  when:
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_cache.purge_patterns is defined
+    - cloudflare_domain_cache.purge_patterns | length > 0
+  changed_when: true  # Purging cache is always a change
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_cache_purge
+
+- name: cloudflare domain | merge global and platform page rules
+  ansible.builtin.set_fact:
+    _all_page_rules: "{{ (cloudflare_page_rules | default([])) + (cloudflare_platform_page_rules | default([])) }}"
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_page_rules
+
+- name: cloudflare domain | get existing page rules
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/pagerules"
+    method: GET
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    status_code: 200
+    return_content: true
+  register: _existing_page_rules
+  when:
+    - cloudflare_zone_id is defined
+    - _all_page_rules | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_page_rules
+
+- name: cloudflare domain | build list of existing page rule priorities
+  ansible.builtin.set_fact:
+    _existing_priorities: "{{ _existing_page_rules.json.result | map(attribute='priority') | list }}"
+  when:
+    - _existing_page_rules is defined
+    - _existing_page_rules.json is defined
+    - _existing_page_rules.json.result is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_page_rules
+
+- name: cloudflare domain | filter out existing page rules
+  ansible.builtin.set_fact:
+    _new_page_rules: "{{ _all_page_rules | rejectattr('priority', 'in', _existing_priorities | default([])) | list }}"
+  when:
+    - _all_page_rules | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_page_rules
+
+- name: cloudflare domain | display skipped existing page rules
+  ansible.builtin.debug:
+    msg: "Skipping existing page rule - Priority {{ item.priority }}: {{ item.targets[0].constraint.value | regex_search('PlatformKey=([^&]+)', '\\1') | first | default('N/A') }}"
+  loop: "{{ _all_page_rules }}"
+  loop_control:
+    label: "Priority {{ item.priority }}"
+  when:
+    - _all_page_rules | length > 0
+    - _existing_priorities is defined
+    - item.priority in _existing_priorities
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_page_rules
+
+- name: cloudflare domain | create new page rules only
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/pagerules"
+    method: POST
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      targets: "{{ item.targets }}"
+      actions: "{{ item.actions }}"
+      priority: "{{ item.priority }}"
+      status: "{{ item.status }}"
+    status_code: [200, 409]
+    return_content: true
+  loop: "{{ _new_page_rules | default([]) }}"
+  loop_control:
+    label: "Priority {{ item.priority }} - {{ item.targets[0].constraint.value }}"
+  register: _page_rules_result
+  when:
+    - cloudflare_zone_id is defined
+    - _new_page_rules is defined
+    - _new_page_rules | length > 0
+  changed_when: 
+    - _page_rules_result.status == 200
+  failed_when: false
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_page_rules
+
+- name: cloudflare domain | display domain configuration summary
+  ansible.builtin.debug:
+    msg:
+      - "Domain configuration applied for {{ cloudflare_zone_name }}"
+      - "Universal SSL: {{ 'Enabled' if cloudflare_domain_ssl.universal_ssl_enabled | default(true) else 'Disabled' }}"
+      - "Argo: {{ 'Enabled' if cloudflare_domain_argo.enabled | default(false) else 'Disabled' }}"
+      - "Cache Rules: {{ cloudflare_domain_cache.cache_rules | default([]) | length }}"
+      - "Page Rules Total: {{ _all_page_rules | default([]) | length }}"
+      - "Page Rules Existing: {{ (_all_page_rules | default([]) | length) - (_new_page_rules | default([]) | length) }}"
+      - "Page Rules Created: {{ _new_page_rules | default([]) | length }}"
+      - "DNSSEC: {{ 'Enabled' if cloudflare_domain_dnssec.enabled | default(false) else 'Disabled' }}"
+      - "Onion Routing (Tor): {{ 'Enabled' if (cloudflare_domain_onion_routing.enabled | default(false)) else 'Disabled' }}"
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain

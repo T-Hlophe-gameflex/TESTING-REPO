@@ -1,0 +1,27 @@
+---
+# kafka
+kafka_broker_internal_listener_port: 9092
+kafka_ssl_dir: /etc/kafka/ssl
+
+# kafka key material
+crt_validity_days: 3650
+crt_country: "IM"
+crt_state: "Douglas"
+crt_locality: "Douglas"
+crt_org: "GamesGlobal"
+
+crt_dname_suffix: "O={{ crt_org }},L={{ crt_locality }},ST={{ crt_state }},C={{ crt_country }}"
+crt_dname_suffix_with_spaces: "O={{ crt_org }}, L={{ crt_locality }}, ST={{ crt_state }}, C={{ crt_country }}"
+crt_internal_ou: "Kafka.Internal.{{ env_id }}.{{ datacenter|upper }}"
+crt_external_ou: "Kafka.External.{{ env_id }}.{{ datacenter|upper }}"
+
+# kafka external parties
+external_parties:
+  - alias: "malta.external.client"
+    cn: "MaltaConsumer"
+    group: "GIOM-GameRoundSettlement-warehouse-malta-processor"
+    topic: "Malta.GameFlex.ExternalGames.EnrichedGameRoundSettlement"
+  - alias: "fonbetgreece.external.client"
+    cn: "fonbetgreece"
+    group: "FON.Greece"
+    topic: "FON.Greece.ExternalEvents"
