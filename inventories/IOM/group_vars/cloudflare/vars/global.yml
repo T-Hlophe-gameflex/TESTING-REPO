@@ -6,7 +6,6 @@ cloudflare_api_token: "{{ cloudflare_api_token }}"
 # Domain configuration
 domains:
   - name: "route-game-flex.eu"
-    zone_id: ""  # Will be populated from Cloudflare API or inventory
     description: "EU Gaming Platform - Route Domain"
     location: "IOM"
     environment: "production"

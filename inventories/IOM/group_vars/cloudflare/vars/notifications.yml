@@ -1,8 +1,8 @@
 ---
+
 cloudflare_notifications:
   enabled: true
-  
-  # Notification policies
+
   policies:
     - name: "SSL Certificate Expiration"
       alert_type: "ssl_certificate_expiration"
@@ -25,8 +25,8 @@ cloudflare_notifications:
     - name: "Rate Limit Triggered"
       alert_type: "rate_limit_triggered"
       enabled: true
-      
+
     - name: "WAF Rule Triggered"
       alert_type: "waf_rule_triggered"
       enabled: true
-      threshold: 1000  # Alert after 1000 triggers
+      threshold: 1000

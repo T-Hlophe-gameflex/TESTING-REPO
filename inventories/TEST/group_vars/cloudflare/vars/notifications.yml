@@ -1,4 +1,5 @@
 ---
+cloudflare_notification_email: "gameflex@gamesglobal.com"
 cloudflare_notification_email_destinations:
   - name: "cloudflare-devops-team"
     email: "{{ cloudflare_notification_email }}"

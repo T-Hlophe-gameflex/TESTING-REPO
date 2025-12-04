@@ -4,8 +4,8 @@ cloudflare_zone_settings:
   type: "full"
   development_mode: false
   security_level: "medium"
-  browser_cache_ttl: 14400  # 4 hours
-  challenge_ttl: 1800  # 30 minutes
+  browser_cache_ttl: 14400  
+  challenge_ttl: 1800  
   privacy_pass: true
   origin_error_page_pass_thru: false
   sort_query_string_for_cache: false
