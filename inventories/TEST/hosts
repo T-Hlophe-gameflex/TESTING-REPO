@@ -1,18 +1,10 @@
+[linux:children]
+ansible
+cloudflare
 
+[ansible]
+localhost ansible_port=8081
 
 
 [cloudflare]
-#AWX (no SSH needed)
 Cloudflare-manager ansible_host=localhost ansible_connection=local ansible_python_interpreter=/usr/bin/python3
-
-[clusterb]
-# Direct SSH to worker LoadBalancer IPs
-clusterb-worker-1 ansible_host=172.26.0.5 ansible_port=22 ansible_user=ubuntu ansible_password="{{ awx_machine_password }}" ansible_python_interpreter=/usr/bin/python3
-clusterb-worker-2 ansible_host=172.26.0.6 ansible_port=22 ansible_user=ubuntu ansible_password="{{ awx_machine_password }}" ansible_python_interpreter=/usr/bin/python3
-
-[all:vars]
-datacenter_code=test
-datacenter_name=TEST
-environment_type=testing
-ansible_ssh_common_args='-o StrictHostKeyChecking=no'
-
