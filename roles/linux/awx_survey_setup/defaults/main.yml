@@ -1,6 +1,6 @@
 ---
 # AWX Connection Settings
-awx_host: "http://localhost:8081"
+awx_host: "{{ groups['ansible'][0] }}"
 awx_validate_certs: true
 awx_organization: "{{ awx_organization_override | default('gameflex') }}"
 awx_project_name: "Cloudflare-DevOps"

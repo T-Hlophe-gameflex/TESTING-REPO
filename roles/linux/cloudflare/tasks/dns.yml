@@ -59,9 +59,7 @@
   ansible.builtin.uri:
     url: "https://api.cloudflare.com/client/v4/zones?name={{ target_zone_name }}"
     method: GET
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
+    headers: "{{ cloudflare_auth_headers }}"
     return_content: true
     validate_certs: true
   register: zone_lookup
