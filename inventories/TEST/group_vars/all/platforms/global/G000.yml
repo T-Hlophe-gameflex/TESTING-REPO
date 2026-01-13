@@ -4,6 +4,9 @@ platform_type: "global"
 env_type: "global"
 platform_domain: "route-game-flex.eu"
 
+# DNS proxy settings - private IPs cannot be proxied through Cloudflare CDN
+dns_proxied: false
+
 ipAddresses:
   gameflex: "10.0.0.10"
   api: "10.0.0.11"
