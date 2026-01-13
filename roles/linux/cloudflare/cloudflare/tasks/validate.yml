@@ -87,8 +87,8 @@
   ansible.builtin.debug:
     msg:
       - "Platform ID: {{ platform_id }}"
-      - "Inventory Dir: {{ inventory_dir }}"
-      - "Looking for platform file at: {{ inventory_dir }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
+      - "Project Dir: {{ playbook_dir }}"
+      - "Looking for platform file at: {{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/global/{{ platform_id }}.yml"
   when:
     - platform_id is defined
     - platform_id != ""
@@ -96,7 +96,7 @@
 
 - name: cloudflare | Check if platform file exists
   ansible.builtin.stat:
-    path: "{{ inventory_dir }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
+    path: "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/global/{{ platform_id }}.yml"
   register: platform_file_check
   when:
     - platform_id is defined
@@ -119,10 +119,16 @@
     file: "{{ item }}"
   with_first_found:
     - files:
-        - "{{ inventory_dir }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/production/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/staging/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/test/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/global/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/production/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/staging/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/test/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/trunk/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/global/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/production/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/preprod/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/staging/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/trunk/{{ platform_id }}.yml"
       skip: true
   when:
     - platform_id is defined
