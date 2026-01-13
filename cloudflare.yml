@@ -3,5 +3,6 @@
   hosts: cloudflare
   gather_facts: yes
   roles:
-    - role: linux/cloudflare
+    - role: linux/cloudflare/cloudflare
+      tags: [cloudflare]
       tags: [cloudflare]
