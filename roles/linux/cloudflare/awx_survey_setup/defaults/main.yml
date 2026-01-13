@@ -1,0 +1,62 @@
+---
+
+awx_host: "{{ groups['ansible'][0] }}"
+awx_validate_certs: true
+awx_organization: "{{ awx_organization_override | default('gameflex') }}"
+awx_project_name: "Cloudflare-DevOps"
+awx_project_description: "Cloudflare DNS and configuration management from Git"
+awx_project_scm_type: "git"
+awx_project_scm_url: "https://github.com/Iforium/gameflex-devops.git"
+awx_project_scm_branch: "Cloudflare-configuration"
+awx_project_scm_clean: true
+awx_project_scm_delete_on_update: true
+awx_project_scm_update_on_launch: true
+awx_project_scm_update_cache_timeout: 0
+awx_project_credential: ""  # GitHub credential name 
+awx_inventory_name: "Gameflex-DevOps-Cloudflare"
+awx_credential_type_name: "AWX Cluster Authentication"
+awx_credential_type_description: "Credentials for connecting to remote AWX/Tower clusters"
+awx_create_credential_type: true  
+awx_create_awx_credential: false  
+awx_cluster_credential_name: "AWX-Cluster-Access"
+awx_template_name: "Cloudflare-Deployment"
+awx_playbook_path: "cloudflare.yml"
+
+survey_enabled: true
+ask_credential_on_launch: false  
+cloudflare_credential_name: "Cloudflare-API-Token"
+cloudflare_api_url: "https://api.cloudflare.com/client/v4"
+
+
+
+domains:
+  - name: "efustryton.co.za"
+    description: "EfuStryton - South Africa production and testing"
+  - name: "efutechnologies.co.za"
+    description: "Efu Technologies - South Africa production and testing"
+
+platforms:
+  - id: "L008"
+    env_type: "production"
+    number: "008"
+    description: "TEST Production Platform 8 (efustryton.co.za)"
+  - id: "S009"
+    env_type: "staging"
+    number: "009"
+    description: "TEST Staging Platform 9 (efustryton.co.za)"
+  - id: "T009"
+    env_type: "test"
+    number: "009"
+    description: "TEST Test Platform 9 (efutechnologies.co.za)"
+  - id: "G000"
+    env_type: "global"
+    number: "000"
+    description: "TEST Global Services Platform 0 (efustryton.co.za)"
+  - id: "G255"
+    env_type: "global"
+    number: "255"
+    description: "TEST Global Services Platform 255 (efutechnologies.co.za)"
+
+default_zone: "efustryton.co.za"
+default_scope: "DNS"
+

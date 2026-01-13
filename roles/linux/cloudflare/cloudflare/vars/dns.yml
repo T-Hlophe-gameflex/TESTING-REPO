@@ -1,0 +1,2 @@
+---
+cloudflare_dns_records: "{{ cloudflare_dns_records | default([]) }}"

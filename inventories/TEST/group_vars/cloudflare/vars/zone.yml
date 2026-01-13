@@ -1,24 +1,15 @@
 ---
 
 cloudflare_zones:
-  - name: "game-flex.eu"
-    description: "Game Flex EU - European production gaming"
+  - name: "efustryton.co.za"
+    description: "EfuStryton - South Africa production and testing"
     jump_start: false
     type: "full"
   
-  - name: "game-flex.us"
-    description: "Game Flex US - US production gaming"
+  - name: "efutechnologies.co.za"
+    description: "Efu Technologies - South Africa production and testing"
     jump_start: false
     type: "full"
 
-  - name: "route-game-flex.eu"
-    description: "Route Game Flex EU - IOM production gaming"
-    jump_start: false
-    type: "full"
+cloudflare_zone_name: "{{ cloudflare_zone | default(platform_domain) | default('efustryton.co.za') }}"
 
-  - name: "iforium.com"
-    description: "Iforium - Production, staging, and global services"
-    jump_start: false
-    type: "full"
-
-cloudflare_zone_name: "{{ cloudflare_zone | default(platform_domain) | default('iforium.com') }}"

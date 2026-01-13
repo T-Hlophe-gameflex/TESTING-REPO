@@ -1,0 +1,86 @@
+---
+
+- name: cloudflare | Set dry-run mode
+  ansible.builtin.set_fact:
+    cloudflare_dry_run: "{{ ansible_check_mode | default(false) or (cloudflare_dry_run | default(false) | bool) }}"
+  tags:
+    - always
+
+- name: cloudflare | Display dry-run mode status
+  ansible.builtin.debug:
+    msg: "{{ 'DRY-RUN MODE ENABLED - No changes will be made' if cloudflare_dry_run else '✓ DEPLOY MODE - Changes will be applied' }}"
+  tags:
+    - always
+
+- import_tasks: validate.yml
+  run_once: true
+  tags:
+    - cloudflare_configuration
+
+- import_tasks: global.yml
+  run_once: true
+  when: cloudflare_scope | default('all') in ['all', 'global']
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+
+- import_tasks: domain.yml
+  run_once: true
+  when: cloudflare_scope | default('all') in ['all', 'domain']
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+
+- import_tasks: network.yml
+  run_once: true
+  when: cloudflare_scope | default('all') in ['all', 'network']
+  tags:
+    - cloudflare_configuration
+    - cloudflare_network
+
+- import_tasks: dns.yml
+  run_once: true
+  when: cloudflare_scope | default('all') in ['all', 'dns']
+  tags:
+    - cloudflare_configuration
+    - cloudflare_dns
+
+- import_tasks: platform.yml
+  run_once: true
+  when: cloudflare_scope | default('all') in ['all', 'platform']
+  tags:
+    - cloudflare_configuration
+    - cloudflare_platform
+
+- import_tasks: notifications.yml
+  run_once: true
+  when: cloudflare_scope | default('all') in ['all', 'notifications']
+  tags:
+    - cloudflare_configuration
+    - cloudflare_notifications
+
+- name: cloudflare | Display completion summary
+  ansible.builtin.debug:
+    msg:
+      - "======================================================================"
+      - "  Cloudflare Configuration Complete!"
+      - "======================================================================"
+      - ""
+      - "Configuration Details:"
+      - "  Domain: {{ effective_zone_name | default(cloudflare_zone_name) }}"
+      - "  Platform: {{ platform_id | default('(domain-wide operation)') }}"
+      - "  Scope: {{ cloudflare_scope | default('all') }}"
+      - "  Ticket: {{ ticket_number | default('N/A') }}"
+      - ""
+      - "What was configured:"
+      - "{% if cloudflare_scope | default('all') in ['all', 'dns'] %}  ✓ DNS records ({{ cloudflare_dns_records | default([]) | length }} records){% endif %}"
+      - "{% if cloudflare_scope | default('all') in ['all', 'domain'] %}  ✓ Domain settings (SSL, cache, Argo){% endif %}"
+      - "{% if cloudflare_scope | default('all') in ['all', 'global'] %}  ✓ Global settings (security headers, rate limiting){% endif %}"
+      - "{% if cloudflare_scope | default('all') in ['all', 'network'] %}  ✓ Network settings (health checks, firewall){% endif %}"
+      - ""
+      - "Verify your changes:"
+      - "  Dashboard: https://dash.cloudflare.com/"
+      - "  Domain: {{ effective_zone_name | default(cloudflare_zone_name) }}"
+      - "======================================================================"
+  run_once: true
+  tags: [always]

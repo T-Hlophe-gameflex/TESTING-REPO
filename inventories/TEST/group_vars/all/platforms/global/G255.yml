@@ -1,0 +1,8 @@
+---
+platform_id: "G255"
+platform_type: "global"
+env_type: "global"
+platform_domain: "efutechnologies.co.za"
+
+ipAddresses:
+  gameflex: "10.0.0.255"

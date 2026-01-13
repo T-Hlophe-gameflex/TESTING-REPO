@@ -1,0 +1,11 @@
+---
+platform_id: "L008"
+platform_type: "production"
+env_type: "production"
+platform_domain: "efustryton.co.za"
+
+ipAddresses:
+  gameflex: "10.1.8.10"
+  backoffice: "10.1.8.11"
+  webapi: "10.1.8.12"
+  gamemanager: "10.1.8.13"

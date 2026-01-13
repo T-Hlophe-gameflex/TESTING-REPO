@@ -1,0 +1,47 @@
+{
+  "name": "{{ survey_name | default('Cloudflare DNS Management') }}",
+  "description": "{{ survey_description | default('Deploy and update Cloudflare configurations from Git repository') }}",
+  "spec": [
+    {
+      "question_name": "Ticket Number",
+      "question_description": "Enter the ticket/change request number for audit tracking (e.g., JIRA-1234, CHG0012345)",
+      "variable": "ticket_number",
+      "type": "text",
+      "min": 3,
+      "max": 50,
+      "default": "",
+      "required": true
+    },
+    {
+      "question_name": "Platform Selection",
+      "question_description": "Select the platform to deploy (L=Production, S=Staging, T=Test, G=Global). Domain is auto-detected from platform configuration.",
+      "variable": "platform_id",
+      "type": "multiplechoice",
+      "choices": [
+        {% for platform in platforms | sort %}
+        "{{ platform }}"{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ],
+      "default": "",
+      "required": true
+    },
+    {
+      "question_name": "Configuration Scope",
+      "question_description": "Select what to deploy: all=Everything, global=Zone+SSL/security, domain=SSL/cache/onion/geolocation, dns=DNS records only, network=Health checks, platform=Firewall, notifications=Alerts",
+      "variable": "cloudflare_scope",
+      "type": "multiplechoice",
+      "choices": ["all", "global", "domain", "dns", "network", "platform", "notifications"],
+      "default": "{{ default_scope | default('all') }}",
+      "required": true
+    },
+    {
+      "question_name": "Dry Run Mode",
+      "question_description": "Preview changes without applying them. Recommended for first-time deployments and validating changes.",
+      "variable": "cloudflare_dry_run",
+      "type": "multiplechoice",
+      "choices": ["false", "true"],
+      "default": "false",
+      "required": true
+    }
+  ]
+}

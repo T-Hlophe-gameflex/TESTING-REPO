@@ -1,0 +1,176 @@
+---
+- name: cloudflare global | Display configuration banner
+  ansible.builtin.debug:
+    msg: "Configuring global Cloudflare settings..."
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+
+- name: cloudflare global | Ensure zones exist
+  ansible.builtin.debug:
+    msg: "Skipping zone creation. Only using existing Cloudflare zones."
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+
+- name: cloudflare global | Fetch existing zones
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones?name={{ item.name }}"
+    method: GET
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    status_code: 200
+    return_content: true
+    timeout: "{{ cloudflare_api_timeout | default(30) }}"
+  loop: "{{ cloudflare_zones | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _zone_fetch_result
+  retries: "{{ cloudflare_api_retries | default(3) }}"
+  delay: "{{ cloudflare_api_delay | default(2) }}"
+  when: cloudflare_zones is defined and cloudflare_zones | length > 0
+  check_mode: no
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+    - cloudflare_zone_management
+
+- name: cloudflare global | Initialize zone id mapping
+  ansible.builtin.set_fact:
+    cloudflare_zone_ids: {}
+  when: cloudflare_zone_ids is not defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+    - cloudflare_zone_management
+
+- name: cloudflare global | Build zone id mapping
+  ansible.builtin.set_fact:
+    cloudflare_zone_ids: >-
+      {{
+        cloudflare_zone_ids | default({}) | combine({
+          item.item.name: item.json.result[0].id
+        })
+      }}
+  loop: "{{ _zone_fetch_result.results }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - item.json is defined
+    - item.json.result is defined
+    - item.json.result | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+    - cloudflare_zone_management
+
+- name: cloudflare global | Set primary zone facts for this execution
+  ansible.builtin.set_fact:
+    cloudflare_zone_name: "{{ cloudflare_zones[0].name }}"
+    cloudflare_zone_id: "{{ cloudflare_zone_ids[cloudflare_zones[0].name] }}"
+  when:
+    - cloudflare_zones is defined
+    - cloudflare_zones | length > 0
+    - cloudflare_zone_ids is defined
+    - cloudflare_zone_ids | length > 0
+    - cloudflare_zones[0].name in cloudflare_zone_ids
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+    - cloudflare_zone_management
+
+- name: cloudflare global | Display zone mappings
+  ansible.builtin.debug:
+    msg: "Zone {{ item.key }} has ID: {{ item.value }}"
+  loop: "{{ cloudflare_zone_ids | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when:
+    - cloudflare_debug | default(false)
+    - cloudflare_zone_ids is defined
+    - cloudflare_zone_ids | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+    - cloudflare_zone_management
+
+- name: cloudflare global | Sanitize performance settings (remove immutable keys and normalize TTL)
+  ansible.builtin.set_fact:
+    cloudflare_global_performance_settings: >-
+      {{
+        (cloudflare_global_performance_settings | default({}) | dict2items
+        | selectattr('key','ne','http2')
+        | list
+        | items2dict)
+        | combine({'browser_cache_ttl': (
+            (cloudflare_global_performance_settings.browser_cache_ttl | int)
+            if (cloudflare_global_performance_settings.browser_cache_ttl is defined and
+                (cloudflare_global_performance_settings.browser_cache_ttl | int) in [0,30,60,300,3600,86400,604800,31536000])
+            else 3600
+        )})
+      }}
+  when: cloudflare_global_performance_settings is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+    - cloudflare_zone_settings
+
+- name: cloudflare global | Apply global zone settings
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_ids[item[0].name] }}/settings/{{ item[1].key }}"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      value: "{{ item[1].value }}"
+    status_code: 200
+    return_content: true
+    timeout: "{{ cloudflare_api_timeout | default(30) }}"
+  loop: "{{ cloudflare_zones | product(cloudflare_global_ssl_settings | dict2items + cloudflare_global_security_settings | dict2items + cloudflare_global_performance_settings | dict2items + cloudflare_global_network_settings | dict2items) | list }}"
+  loop_control:
+    label: "{{ item[0].name }} - {{ item[1].key }}"
+  register: _global_settings_result
+  changed_when: _global_settings_result.json.result.modified_on is defined
+  failed_when: false
+  when:
+    - cloudflare_zone_ids is defined
+    - cloudflare_zone_ids[item[0].name] is defined
+    - item[1].value is defined
+    - item[1].value != "off" or (item[1].key in ['development_mode'])
+  retries: "{{ cloudflare_api_retries | default(3) }}"
+  delay: "{{ cloudflare_api_delay | default(2) }}"
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+    - cloudflare_zone_settings
+
+- name: cloudflare global | Log failed settings (informational)
+  ansible.builtin.debug:
+    msg: "Setting {{ item.item[1].key }} for zone {{ item.item[0].name }} failed or not available"
+  loop: "{{ _global_settings_result.results }}"
+  loop_control:
+    label: "{{ item.item[0].name if item.item is defined else 'N/A' }} - {{ item.item[1].key if item.item is defined else 'N/A' }}"
+  when:
+    - item.status is defined
+    - item.status != 200
+    - cloudflare_debug | default(false)
+  no_log: "{{ not (cloudflare_debug | default(false)) }}"
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global
+    - cloudflare_zone_settings
+
+- name: cloudflare global | Display global configuration summary
+  ansible.builtin.debug:
+    msg:
+      - "Global configuration completed"
+      - "Zones configured: {{ cloudflare_zones | default([]) | length }}"
+  when: cloudflare_zones is defined and cloudflare_zones | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_global

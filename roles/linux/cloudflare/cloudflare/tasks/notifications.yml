@@ -1,0 +1,95 @@
+---
+
+- name: cloudflare notifications | Display configuration banner
+  ansible.builtin.debug:
+    msg: "Configuring notification policies for {{ platform_id | default('account') }}..."
+  tags:
+    - cloudflare_configuration
+    - cloudflare_notifications
+
+- name: cloudflare notifications | Display dry-run email destination creation
+  ansible.builtin.debug:
+    msg:
+      - "🔍 DRY-RUN: Would CREATE email destination:"
+      - "  Name: {{ item.name }}"
+      - "  Email: {{ item.email }}"
+  loop: "{{ cloudflare_notification_email_destinations | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_account_id is defined
+    - cloudflare_notification_email_destinations | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_notifications
+    - cloudflare_email_destinations
+
+- name: cloudflare notifications | Create email destinations
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/accounts/{{ cloudflare_account_id }}/alerting/v3/destinations/email"
+    method: POST
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "{{ item.name }}"
+      email: "{{ item.email }}"
+    status_code: [200, 409]
+    return_content: true
+  loop: "{{ cloudflare_notification_email_destinations | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _email_destinations_result
+  when:
+    - not (cloudflare_dry_run | default(false) | bool)
+    - cloudflare_account_id is defined
+    - cloudflare_notification_email_destinations | length > 0
+  changed_when: _email_destinations_result.status == 200
+  failed_when: false
+  ignore_errors: true
+  tags:
+    - cloudflare_configuration
+    - cloudflare_notifications
+    - cloudflare_email_destinations
+
+- name: cloudflare notifications | Create webhook destinations
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/accounts/{{ cloudflare_account_id }}/alerting/v3/destinations/webhooks"
+    method: POST
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      name: "{{ item.name }}"
+      url: "{{ item.url }}"
+      secret: "{{ item.secret | default('') }}"
+    status_code: [200, 409]
+    return_content: true
+  loop: "{{ cloudflare_notification_webhook_destinations | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
+  register: _webhook_destinations_result
+  when:
+    - cloudflare_account_id is defined
+    - cloudflare_notification_webhook_destinations | length > 0
+  changed_when: _webhook_destinations_result.status == 200
+  failed_when: false
+  ignore_errors: true
+  tags:
+    - cloudflare_configuration
+    - cloudflare_notifications
+    - cloudflare_webhook_destinations
+ 
+- name: cloudflare notifications | Display notification configuration summary
+  ansible.builtin.debug:
+    msg:
+      - "Notification configuration applied"
+      - "Email Destinations: {{ cloudflare_notification_email_destinations | default([]) | length }}"  
+  tags:
+    - cloudflare_configuration
+    - cloudflare_notifications
