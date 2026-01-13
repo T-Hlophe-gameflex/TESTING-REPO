@@ -83,24 +83,46 @@
   ignore_errors: true
   tags: cloudflare_configuration
 
+- name: cloudflare | Debug platform file paths
+  ansible.builtin.debug:
+    msg:
+      - "Platform ID: {{ platform_id }}"
+      - "Inventory Dir: {{ inventory_dir }}"
+      - "Looking for platform file at: {{ inventory_dir }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
+  when:
+    - platform_id is defined
+    - platform_id != ""
+  tags: cloudflare_configuration
+
+- name: cloudflare | Check if platform file exists
+  ansible.builtin.stat:
+    path: "{{ inventory_dir }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
+  register: platform_file_check
+  when:
+    - platform_id is defined
+    - platform_id != ""
+  tags: cloudflare_configuration
+
+- name: cloudflare | Show platform file check result
+  ansible.builtin.debug:
+    msg:
+      - "File exists: {{ platform_file_check.stat.exists | default(false) }}"
+      - "File path: {{ platform_file_check.stat.path | default('N/A') }}"
+  when:
+    - platform_id is defined
+    - platform_id != ""
+    - platform_file_check is defined
+  tags: cloudflare_configuration
+
 - name: cloudflare | Load platform-specific configuration dynamically
   ansible.builtin.include_vars:
     file: "{{ item }}"
   with_first_found:
     - files:
-        # Search all/platforms first (new structure)
         - "{{ inventory_dir }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
         - "{{ inventory_dir }}/group_vars/all/platforms/production/{{ platform_id }}.yml"
         - "{{ inventory_dir }}/group_vars/all/platforms/staging/{{ platform_id }}.yml"
         - "{{ inventory_dir }}/group_vars/all/platforms/test/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/trunk/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/preprod/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/live/{{ platform_id }}.yml"
-        # Fallback to cloudflare/platforms (legacy structure)
-        - "{{ inventory_dir }}/group_vars/cloudflare/platforms/global/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/cloudflare/platforms/production/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/cloudflare/platforms/staging/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/cloudflare/platforms/test/{{ platform_id }}.yml"
       skip: true
   when:
     - platform_id is defined

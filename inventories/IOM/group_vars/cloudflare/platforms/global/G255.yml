@@ -1,9 +1,0 @@
----
-platform_id: "G255"
-platform_type: "global"
-env_type: "global"
-region: "IOM"
-
-ipAddresses:
-  webapi: "REPLACE_WITH_IOM_G255_WEBAPI_IP"
-  operatorwalletapi: "REPLACE_WITH_IOM_G255_OPERATORWALLETAPI_IP"

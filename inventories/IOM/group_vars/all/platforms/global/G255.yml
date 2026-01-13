@@ -1,0 +1,9 @@
+---
+platform_id: "G255"
+platform_type: "global"
+env_type: "global"
+platform_domain: "iforium.com"
+
+ipAddresses:
+  webapi: "81.88.167.90"
+  operatorwalletapi: "81.88.167.90"

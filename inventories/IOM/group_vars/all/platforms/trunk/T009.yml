@@ -1,0 +1,8 @@
+---
+platform_id: "T009"
+platform_type: "trunk"
+env_type: "trunk"
+platform_domain: "iforium.com"
+
+ipAddresses:
+  gameflex: "81.88.167.90"

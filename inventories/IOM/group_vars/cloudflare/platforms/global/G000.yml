@@ -1,8 +1,0 @@
----
-platform_id: "G000"
-platform_type: "global"
-env_type: "global"
-region: "IOM"
-
-ipAddresses:
-  gameflex: "REPLACE_WITH_IOM_G000_GAMEFLEX_IP"

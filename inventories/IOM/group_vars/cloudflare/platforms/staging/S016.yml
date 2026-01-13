@@ -1,8 +1,0 @@
----
-platform_id: "S016"
-platform_type: "staging"
-env_type: "staging"
-region: "IOM"
-
-ipAddresses:
-  gameflex: "REPLACE_WITH_IOM_S016_GAMEFLEX_IP"

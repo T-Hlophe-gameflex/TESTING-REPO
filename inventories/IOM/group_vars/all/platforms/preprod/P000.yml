@@ -1,0 +1,11 @@
+---
+platform_id: "P000"
+platform_type: "preprod"
+env_type: "preprod"
+platform_domain: "iforium.com"
+
+ipAddresses:
+  gameflex: "81.88.167.90"
+  backoffice: "81.88.167.90"
+  webapi: "81.88.167.90"
+  gamemanager: "81.88.167.90"

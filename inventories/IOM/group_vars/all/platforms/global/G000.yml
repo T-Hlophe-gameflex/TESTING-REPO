@@ -1,0 +1,8 @@
+---
+platform_id: "G000"
+platform_type: "global"
+env_type: "global"
+platform_domain: "iforium.com"
+
+ipAddresses:
+  gameflex: "81.88.167.81"

@@ -1,0 +1,8 @@
+---
+platform_id: "P019"
+platform_type: "preprod"
+env_type: "preprod"
+platform_domain: "iforium.com"
+
+ipAddresses:
+  gamemanager: "81.88.167.90"

@@ -1,0 +1,36 @@
+---
+default_location: "IOM"
+default_region: "Isle of Man"
+
+# IOM Inventory Platform Responsibility:
+# - Preprod (P) platforms: iforium.com domain
+# - Staging (S) platforms: iforium.com domain
+# - Trunk (T) platforms: iforium.com domain
+# - Global (G) platforms: iforium.com domain
+# Note: Live (L) platforms are managed by LON inventory
+
+preprod_environment_settings:
+  ssl_mode: "full_strict"
+  always_use_https: true
+  dns_proxied: true
+
+staging_environment_settings:
+  ssl_mode: "full_strict"
+  always_use_https: true
+  dns_proxied: true
+
+trunk_environment_settings:
+  ssl_mode: "off"
+  always_use_https: false
+  dns_proxied: true
+
+global_environment_settings:
+  ssl_mode: "full_strict"
+  always_use_https: true
+  dns_proxied: true
+
+
+
+
+
+
