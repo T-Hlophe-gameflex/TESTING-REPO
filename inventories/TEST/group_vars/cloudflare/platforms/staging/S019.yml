@@ -1,7 +1,0 @@
----
-platform_id: "S019"
-platform_type: "staging"
-env_type: "staging"
-
-ipAddresses:
-  gamemanager: "81.88.167.90"
