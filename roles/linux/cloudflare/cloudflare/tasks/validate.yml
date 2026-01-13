@@ -88,19 +88,19 @@
     file: "{{ item }}"
   with_first_found:
     - files:
-        - "{{ inventory_dir }}/group_vars/cloudflare/platforms/{{ env_type | default(platform_type) | default('live') }}/{{ platform_id }}.yml"
+        # Search all/platforms first (new structure)
+        - "{{ inventory_dir }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
+        - "{{ inventory_dir }}/group_vars/all/platforms/production/{{ platform_id }}.yml"
+        - "{{ inventory_dir }}/group_vars/all/platforms/staging/{{ platform_id }}.yml"
+        - "{{ inventory_dir }}/group_vars/all/platforms/test/{{ platform_id }}.yml"
+        - "{{ inventory_dir }}/group_vars/all/platforms/trunk/{{ platform_id }}.yml"
+        - "{{ inventory_dir }}/group_vars/all/platforms/preprod/{{ platform_id }}.yml"
+        - "{{ inventory_dir }}/group_vars/all/platforms/live/{{ platform_id }}.yml"
+        # Fallback to cloudflare/platforms (legacy structure)
+        - "{{ inventory_dir }}/group_vars/cloudflare/platforms/global/{{ platform_id }}.yml"
         - "{{ inventory_dir }}/group_vars/cloudflare/platforms/production/{{ platform_id }}.yml"
         - "{{ inventory_dir }}/group_vars/cloudflare/platforms/staging/{{ platform_id }}.yml"
         - "{{ inventory_dir }}/group_vars/cloudflare/platforms/test/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/cloudflare/platforms/global/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/{{ env_type | default(platform_type) | default('live') }}/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/production/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/live/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/preprod/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/staging/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/test/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
-        - "{{ inventory_dir }}/group_vars/all/platforms/trunk/{{ platform_id }}.yml"
       skip: true
   when:
     - platform_id is defined
