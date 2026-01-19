@@ -123,13 +123,13 @@
     status_code: [200]
   register: dns_record_lookup
   loop: "{{ cloudflare_dns_records | default([]) }}"
-  loop_control:
-    label: "{{ item.name }} ({{ item.type }})"
   no_log: true
   when:
     - cloudflare_zone_id is defined
     - cloudflare_dns_records is defined
     - cloudflare_dns_records | length > 0
+  changed_when: false
+  failed_when: false
   tags:
     - cloudflare_configuration
     - cloudflare_dns
@@ -197,8 +197,6 @@
     validate_certs: true
     status_code: [200]
   loop: "{{ cloudflare_dns_records | default([]) | zip(dns_record_lookup.results | default([])) | list }}"
-  loop_control:
-    label: "{{ item.0.name }} ({{ item.0.type }})"
   no_log: true
   when:
     - not (cloudflare_dry_run | default(false) | bool)
@@ -207,6 +205,8 @@
     - cloudflare_dns_records | length > 0
     - item.1 is defined
   register: dns_create_result
+  changed_when: dns_create_result.status == 200
+  failed_when: false
   tags:
     - cloudflare_configuration
     - cloudflare_dns
@@ -218,6 +218,7 @@
     msg: "{{ item.item.0.name }}.{{ target_zone_name }}: {{ 'UPDATED' if (item.item.1.json.result | length > 0) else 'CREATED' }} successfully"
   loop: "{{ dns_create_result.results | default([]) }}"
   loop_control:
+    label: "{{ item.item.0.name }}"
     label: "{{ item.item.0.name }}"
   when:
     - dns_create_result is defined

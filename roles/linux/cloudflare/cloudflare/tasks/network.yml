@@ -9,7 +9,7 @@
 - name: cloudflare network | Display dry-run health check creation
   ansible.builtin.debug:
     msg:
-      - "🔍 DRY-RUN: Would CREATE health check:"
+      - " DRY-RUN: Would CREATE health check:"
       - "  Name: {{ item.name }}"
       - "  Address: {{ item.address }}"
       - "  Type: {{ item.type | default('https') }}"

@@ -8,14 +8,12 @@ domains:
   - name: "route-game-flex.eu"
     zone_id: ""  # Will be populated from Cloudflare API or inventory
     description: "EU Gaming Platform - Route Domain"
-    location: "IOM"
+    location: "IOM & LON"
     environment: "production"
 
-# Platform configuration
-platforms:
-  - platform_id: "L016"
-    platform_number: "016"
-    env_type: "production"
-    platform_domain: "route-game-flex.eu"
-    location: "IOM"
-    region: "Isle of Man"
+  - name: "iforium.com"
+    zone_id: ""  # Will be populated from Cloudflare API or inventory
+    description: "Global Services Domain"
+    location: "Global"
+    environment: "global" 
+

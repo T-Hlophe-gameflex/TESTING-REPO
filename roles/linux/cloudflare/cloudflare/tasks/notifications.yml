@@ -10,7 +10,7 @@
 - name: cloudflare notifications | Display dry-run email destination creation
   ansible.builtin.debug:
     msg:
-      - "🔍 DRY-RUN: Would CREATE email destination:"
+      - " DRY-RUN: Would CREATE email destination:"
       - "  Name: {{ item.name }}"
       - "  Email: {{ item.email }}"
   loop: "{{ cloudflare_notification_email_destinations | default([]) }}"

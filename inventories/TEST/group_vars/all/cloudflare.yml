@@ -2,12 +2,6 @@
 default_location: "TEST"
 default_region: "Ireland"
 
-# TEST Inventory Platform Responsibility:
-# - Production (L) platforms: efustryton.co.za and efutechnologies.co.za domains
-# - Staging (S) platforms: efustryton.co.za and efutechnologies.co.za domains
-# - Test (T) platforms: efustryton.co.za and efutechnologies.co.za domains
-# - Global (G) platforms: efustryton.co.za and efutechnologies.co.za domains
-
 production_environment_settings:
   ssl_mode: "full_strict"
   always_use_https: true
