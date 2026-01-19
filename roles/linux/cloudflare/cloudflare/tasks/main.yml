@@ -45,13 +45,6 @@
     - cloudflare_configuration
     - cloudflare_dns
 
-- import_tasks: platform.yml
-  run_once: true
-  when: cloudflare_scope | default('all') in ['all', 'platform']
-  tags:
-    - cloudflare_configuration
-    - cloudflare_platform
-
 - import_tasks: notifications.yml
   run_once: true
   when: cloudflare_scope | default('all') in ['all', 'notifications']

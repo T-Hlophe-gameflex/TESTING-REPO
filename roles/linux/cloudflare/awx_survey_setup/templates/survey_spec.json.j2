@@ -27,10 +27,10 @@
     },
     {
       "question_name": "Configuration Scope",
-      "question_description": "Select what to deploy: all=Everything, global=Zone+SSL/security, domain=SSL/cache/onion/geolocation, dns=DNS records only, network=Health checks, platform=Firewall, notifications=Alerts",
+      "question_description": "Select what to deploy: all=Everything, global=Zone+SSL/security, domain=SSL/cache/onion/geolocation, dns=DNS records only, network=Health checks, notifications=Alerts",
       "variable": "cloudflare_scope",
       "type": "multiplechoice",
-      "choices": ["all", "global", "domain", "dns", "network", "platform", "notifications"],
+      "choices": ["all", "global", "domain", "dns", "network", "notifications"],
       "default": "{{ default_scope | default('all') }}",
       "required": true
     },
