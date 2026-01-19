@@ -26,7 +26,6 @@
       - "  Cloudflare Configuration"
       - "  Domain: {{ platform_domain | default(effective_zone_name) | default('N/A') }}"
       - "  Platform: {{ platform_id | default('(domain-wide)') }}"
-      - "  Environment: {{ platform_type | default('N/A') }}"
       - "  Scope: {{ cloudflare_scope | default('all') }}"
       - "  Ticket: {{ ticket_number | default('NOT PROVIDED') }}"
       - "======================================================================"
