@@ -52,66 +52,50 @@
     - cloudflare_configuration
     - cloudflare_notifications
 
-- name: cloudflare | Build completion message with DNS records
-  ansible.builtin.set_fact:
-    completion_msg:
-      - "======================================================================"
-      - "  Cloudflare Configuration Complete!"
-      - "======================================================================"
-      - ""
-      - "Configuration Details:"
-      - "  Domain: {{ effective_zone_name | default(cloudflare_zone_name) }}"
-      - "  Platform: {{ platform_id | default('(domain-wide operation)') }}"
-      - "  Scope: {{ cloudflare_scope | default('all') }}"
-      - "  Ticket: {{ ticket_number | default('N/A') }}"
-      - ""
-      - "What was configured:"
-  when: true
-  run_once: true
-  tags: [always]
-
-- name: cloudflare | Add DNS records header to completion message
-  ansible.builtin.set_fact:
-    completion_msg: "{{ completion_msg + ['  ✓ DNS records (' + (cloudflare_dns_records | default([]) | length | string) + ' records):'] }}"
-  when:
-    - cloudflare_scope | default('all') in ['all', 'dns']
-  run_once: true
-  tags: [always]
-
-- name: cloudflare | Add each DNS record to completion message
-  ansible.builtin.set_fact:
-    completion_msg: "{{ completion_msg + ['    - ' + item.name + '.' + (effective_zone_name | default(cloudflare_zone_name)) + ' → ' + item.content + ' (' + item.type + ')'] }}"
-  loop: "{{ cloudflare_dns_records | default([]) }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when:
-    - cloudflare_scope | default('all') in ['all', 'dns']
-    - cloudflare_dns_records is defined
-    - cloudflare_dns_records | length > 0
-  run_once: true
-  tags: [always]
-
-- name: cloudflare | Add other scopes to completion message
-  ansible.builtin.set_fact:
-    completion_msg: "{{ completion_msg + other_scopes }}"
-  vars:
-    other_scopes: >-
-      {{
-        (cloudflare_scope | default('all') in ['all', 'domain']) | ternary(['  ✓ Domain settings (SSL, cache, Argo)'], []) +
-        (cloudflare_scope | default('all') in ['all', 'global']) | ternary(['  ✓ Global settings (security headers, rate limiting)'], []) +
-        (cloudflare_scope | default('all') in ['all', 'network']) | ternary(['  ✓ Network settings (health checks, firewall)'], [])
-      }}
-  run_once: true
-  tags: [always]
-
-- name: cloudflare | Add footer to completion message
-  ansible.builtin.set_fact:
-    completion_msg: "{{ completion_msg + ['', 'Verify your changes:', '  Dashboard: https://dash.cloudflare.com/', '  Domain: ' + (effective_zone_name | default(cloudflare_zone_name)), '======================================================================'] }}"
-  run_once: true
-  tags: [always]
-
 - name: cloudflare | Display completion summary
   ansible.builtin.debug:
-    msg: "{{ completion_msg }}"
+    msg: >-
+      {{
+        [
+          '======================================================================',
+          '  Cloudflare Configuration Complete!',
+          '======================================================================',
+          '',
+          'Configuration Details:',
+          '  Domain: ' + (effective_zone_name | default(cloudflare_zone_name)),
+          '  Platform: ' + (platform_id | default('(domain-wide operation)')),
+          '  Scope: ' + (cloudflare_scope | default('all')),
+          '  Ticket: ' + (ticket_number | default('N/A')),
+          '',
+          'What was configured:'
+        ] +
+        (
+          (cloudflare_scope | default('all') in ['all', 'dns'])
+          | ternary(
+              ['  ✓ DNS records (' + (cloudflare_dns_records | default([]) | length | string) + ' records):'] +
+              (cloudflare_dns_records | default([]) | format_dns_records(effective_zone_name | default(cloudflare_zone_name))),
+              []
+            )
+        ) +
+        (
+          (cloudflare_scope | default('all') in ['all', 'domain'])
+          | ternary(['  ✓ Domain settings (SSL, cache, Argo)'], [])
+        ) +
+        (
+          (cloudflare_scope | default('all') in ['all', 'global'])
+          | ternary(['  ✓ Global settings (security headers, rate limiting)'], [])
+        ) +
+        (
+          (cloudflare_scope | default('all') in ['all', 'network'])
+          | ternary(['  ✓ Network settings (health checks, firewall)'], [])
+        ) +
+        [
+          '',
+          'Verify your changes:',
+          '  Dashboard: https://dash.cloudflare.com/',
+          '  Domain: ' + (effective_zone_name | default(cloudflare_zone_name)),
+          '======================================================================'
+        ]
+      }}
   run_once: true
   tags: [always]
