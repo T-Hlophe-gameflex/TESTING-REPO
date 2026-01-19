@@ -52,22 +52,9 @@
     - cloudflare_configuration
     - cloudflare_notifications
 
-- name: cloudflare | Build DNS records list for display
+- name: cloudflare | Build completion message with DNS records
   ansible.builtin.set_fact:
-    dns_records_display: "{{ dns_records_display | default([]) + ['    - ' + item.name + '.' + (effective_zone_name | default(cloudflare_zone_name)) + ' → ' + item.content + ' (' + item.type + ')'] }}"
-  loop: "{{ cloudflare_dns_records | default([]) }}"
-  loop_control:
-    label: "{{ item.name }}"
-  when:
-    - cloudflare_scope | default('all') in ['all', 'dns']
-    - cloudflare_dns_records is defined
-    - cloudflare_dns_records | length > 0
-  run_once: true
-  tags: [always]
-
-- name: cloudflare | Display completion summary
-  ansible.builtin.debug:
-    msg:
+    completion_msg:
       - "======================================================================"
       - "  Cloudflare Configuration Complete!"
       - "======================================================================"
@@ -79,15 +66,52 @@
       - "  Ticket: {{ ticket_number | default('N/A') }}"
       - ""
       - "What was configured:"
-      - "{% if cloudflare_scope | default('all') in ['all', 'dns'] %}  ✓ DNS records ({{ cloudflare_dns_records | default([]) | length }} records):{% endif %}"
-      - "{% if cloudflare_scope | default('all') in ['all', 'dns'] and dns_records_display is defined %}{% for record in dns_records_display %}{{ record }}{% if not loop.last %}\n{% endif %}{% endfor %}{% endif %}"
-      - "{% if cloudflare_scope | default('all') in ['all', 'domain'] %}  ✓ Domain settings (SSL, cache, Argo){% endif %}"
-      - "{% if cloudflare_scope | default('all') in ['all', 'global'] %}  ✓ Global settings (security headers, rate limiting){% endif %}"
-      - "{% if cloudflare_scope | default('all') in ['all', 'network'] %}  ✓ Network settings (health checks, firewall){% endif %}"
-      - ""
-      - "Verify your changes:"
-      - "  Dashboard: https://dash.cloudflare.com/"
-      - "  Domain: {{ effective_zone_name | default(cloudflare_zone_name) }}"
-      - "======================================================================"
+  when: true
+  run_once: true
+  tags: [always]
+
+- name: cloudflare | Add DNS records header to completion message
+  ansible.builtin.set_fact:
+    completion_msg: "{{ completion_msg + ['  ✓ DNS records (' + (cloudflare_dns_records | default([]) | length | string) + ' records):'] }}"
+  when:
+    - cloudflare_scope | default('all') in ['all', 'dns']
+  run_once: true
+  tags: [always]
+
+- name: cloudflare | Add each DNS record to completion message
+  ansible.builtin.set_fact:
+    completion_msg: "{{ completion_msg + ['    - ' + item.name + '.' + (effective_zone_name | default(cloudflare_zone_name)) + ' → ' + item.content + ' (' + item.type + ')'] }}"
+  loop: "{{ cloudflare_dns_records | default([]) }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - cloudflare_scope | default('all') in ['all', 'dns']
+    - cloudflare_dns_records is defined
+    - cloudflare_dns_records | length > 0
+  run_once: true
+  tags: [always]
+
+- name: cloudflare | Add other scopes to completion message
+  ansible.builtin.set_fact:
+    completion_msg: "{{ completion_msg + other_scopes }}"
+  vars:
+    other_scopes: >-
+      {{
+        (cloudflare_scope | default('all') in ['all', 'domain']) | ternary(['  ✓ Domain settings (SSL, cache, Argo)'], []) +
+        (cloudflare_scope | default('all') in ['all', 'global']) | ternary(['  ✓ Global settings (security headers, rate limiting)'], []) +
+        (cloudflare_scope | default('all') in ['all', 'network']) | ternary(['  ✓ Network settings (health checks, firewall)'], [])
+      }}
+  run_once: true
+  tags: [always]
+
+- name: cloudflare | Add footer to completion message
+  ansible.builtin.set_fact:
+    completion_msg: "{{ completion_msg + ['', 'Verify your changes:', '  Dashboard: https://dash.cloudflare.com/', '  Domain: ' + (effective_zone_name | default(cloudflare_zone_name)), '======================================================================'] }}"
+  run_once: true
+  tags: [always]
+
+- name: cloudflare | Display completion summary
+  ansible.builtin.debug:
+    msg: "{{ completion_msg }}"
   run_once: true
   tags: [always]
