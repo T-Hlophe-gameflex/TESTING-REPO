@@ -219,8 +219,8 @@
   loop: "{{ dns_create_result.results | default([]) }}"
   loop_control:
     label: "{{ item.item.0.name }}"
-    label: "{{ item.item.0.name }}"
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - dns_create_result is defined
     - dns_create_result.results is defined
     - not item.skipped | default(false)
