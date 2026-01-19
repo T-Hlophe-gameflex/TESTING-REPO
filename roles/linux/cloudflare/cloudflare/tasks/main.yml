@@ -69,7 +69,6 @@
   when: true
   run_once: true
   tags: [always]
-  verbosity: 1
 
 - name: cloudflare | Add DNS records header to completion message
   ansible.builtin.set_fact:
@@ -78,7 +77,6 @@
     - cloudflare_scope | default('all') in ['all', 'dns']
   run_once: true
   tags: [always]
-  verbosity: 1
 
 - name: cloudflare | Add each DNS record to completion message
   ansible.builtin.set_fact:
@@ -92,7 +90,6 @@
     - cloudflare_dns_records | length > 0
   run_once: true
   tags: [always]
-  verbosity: 1
 
 - name: cloudflare | Add other scopes to completion message
   ansible.builtin.set_fact:
@@ -106,14 +103,12 @@
       }}
   run_once: true
   tags: [always]
-  verbosity: 1
 
 - name: cloudflare | Add footer to completion message
   ansible.builtin.set_fact:
     completion_msg: "{{ completion_msg + ['', 'Verify your changes:', '  Dashboard: https://dash.cloudflare.com/', '  Domain: ' + (effective_zone_name | default(cloudflare_zone_name)), '======================================================================'] }}"
   run_once: true
   tags: [always]
-  verbosity: 1
 
 - name: cloudflare | Display completion summary
   ansible.builtin.debug:
