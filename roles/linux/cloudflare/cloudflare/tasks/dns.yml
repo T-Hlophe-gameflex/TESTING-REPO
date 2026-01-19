@@ -47,12 +47,14 @@
 
 - name: cloudflare dns | Display configuration banner
   ansible.builtin.debug:
-    msg:
-      - "Configuring DNS for zone: {{ target_zone_name }}"
-      - "Platform: {{ platform_id | default('(domain-wide)') }}"
-      - "DNS Records: {{ cloudflare_dns_records | default([]) | length }}"
-      - "Records to be created/updated:"
-      - "{% for record in cloudflare_dns_records | default([]) %}  - {{ record.name }}.{{ target_zone_name }} → {{ record.content }} ({{ record.type }}){% endfor %}"
+    msg: |
+      Configuring DNS for zone: {{ target_zone_name }}
+      Platform: {{ platform_id | default('(domain-wide)') }}
+      DNS Records: {{ cloudflare_dns_records | default([]) | length }}
+      Records to be created/updated:
+      {% for record in cloudflare_dns_records | default([]) %}
+        - {{ record.name }}.{{ target_zone_name }} → {{ record.content }} ({{ record.type }})
+      {% endfor %}
   tags:
     - cloudflare_configuration
     - cloudflare_dns
