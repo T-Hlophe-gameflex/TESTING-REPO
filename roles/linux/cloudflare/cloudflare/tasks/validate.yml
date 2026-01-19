@@ -26,7 +26,7 @@
       - "  Cloudflare Configuration"
       - "  Domain: {{ platform_domain | default(effective_zone_name) | default('N/A') }}"
       - "  Platform: {{ platform_id | default('(domain-wide)') }}"
-      - "  Environment: {{ env_type | default('N/A') }}"
+      - "  Environment: {{ platform_type | default('N/A') }}"
       - "  Scope: {{ cloudflare_scope | default('all') }}"
       - "  Ticket: {{ ticket_number | default('NOT PROVIDED') }}"
       - "======================================================================"
@@ -140,7 +140,7 @@
     msg:
       - "Platform configuration loaded via Ansible inventory group_vars"
       - "Platform: {{ platform_id | default('N/A') }}"
-      - "Environment: {{ env_type | default(platform_type) }}"
+      - "Environment: {{ platform_type }}"
       - "IP Addresses: {{ ipAddresses | default({}) | length }} configured"
   tags: cloudflare_configuration
   when:
@@ -151,15 +151,15 @@
   ansible.builtin.assert:
     that:
       - platform_id is defined
-      - (env_type is defined) or (platform_type is defined)
+      - platform_type is defined
       - ipAddresses is defined
       - ipAddresses | length > 0
     fail_msg: |
       Platform configuration not loaded from inventory.
-      Expected file: {{ inventory_dir }}/group_vars/all/platforms/{{ env_type | default(platform_type) }}/{{ platform_id }}.yml
+      Expected file: {{ inventory_dir }}/group_vars/all/platforms/{{ platform_type }}/{{ platform_id }}.yml
       Make sure platform file exists and contains:
         - platform_id
-        - platform_type or env_type
+        - platform_type
         - ipAddresses
     success_msg: "Platform {{ platform_id }} configuration validated successfully"
   when:

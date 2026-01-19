@@ -1,8 +1,7 @@
 ---
 platform_id: "T009"
 platform_type: "test"
-env_type: "test"
-platform_domain: "efutechnologies.co.za"
+platform_domain: "route-game-flex.eu"
 
 ipAddresses:
   gameflex: "10.3.9.10"

@@ -15,7 +15,7 @@
           'content': ip_value,
           'ttl': dns_ttl | default(default_dns_ttl | default(1)),
           'proxied': dns_proxied | default(default_dns_proxied | default(true)),
-          'comment': platform_id ~ ' - ' ~ record_type.comment ~ ' (' ~ (platform_type | default(env_type | default('unknown'))) ~ ' environment)'
+          'comment': platform_id ~ ' - ' ~ record_type.comment ~ ' (' ~ platform_type ~ ' environment)'
       } %}
       {% set _ = records.append(record_dict) %}
       {% endif %}
@@ -26,7 +26,7 @@
           'content': record_type.content,
           'ttl': dns_ttl | default(default_dns_ttl | default(1)),
           'proxied': dns_proxied | default(default_dns_proxied | default(true)),
-          'comment': platform_id ~ ' - ' ~ record_type.comment ~ ' (' ~ (platform_type | default(env_type | default('unknown'))) ~ ' environment)'
+          'comment': platform_id ~ ' - ' ~ record_type.comment ~ ' (' ~ platform_type ~ ' environment)'
       } %}
       {% set _ = records.append(record_dict) %}
       {% endif %}
