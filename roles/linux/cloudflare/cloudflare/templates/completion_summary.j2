@@ -1,0 +1,32 @@
+---
+- "======================================================================"
+- "  Cloudflare Configuration Complete!"
+- "======================================================================"
+- ""
+- "Configuration Details:"
+- "  Domain: {{ effective_zone_name | default(cloudflare_zone_name) }}"
+- "  Platform: {{ platform_id | default('(domain-wide operation)') }}"
+- "  Scope: {{ cloudflare_scope | default('all') }}"
+- "  Ticket: {{ ticket_number | default('N/A') }}"
+- ""
+- "What was configured:"
+{% if cloudflare_scope | default('all') in ['all', 'dns'] %}
+- "  ✓ DNS records ({{ cloudflare_dns_records | default([]) | length }} records):"
+{% for record in cloudflare_dns_records | default([]) %}
+- "    - {{ record.name }}.{{ effective_zone_name | default(cloudflare_zone_name) }} → {{ record.content }} ({{ record.type }})"
+{% endfor %}
+{% endif %}
+{% if cloudflare_scope | default('all') in ['all', 'domain'] %}
+- "  ✓ Domain settings (SSL, cache, Argo)"
+{% endif %}
+{% if cloudflare_scope | default('all') in ['all', 'global'] %}
+- "  ✓ Global settings (security headers, rate limiting)"
+{% endif %}
+{% if cloudflare_scope | default('all') in ['all', 'network'] %}
+- "  ✓ Network settings (health checks, firewall)"
+{% endif %}
+- ""
+- "Verify your changes:"
+- "  Dashboard: https://dash.cloudflare.com/"
+- "  Domain: {{ effective_zone_name | default(cloudflare_zone_name) }}"
+- "======================================================================"
