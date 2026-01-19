@@ -102,17 +102,6 @@
     - platform_id != ""
   tags: cloudflare_configuration
 
-- name: cloudflare | Show platform file check result
-  ansible.builtin.debug:
-    msg:
-      - "File exists: {{ platform_file_check.stat.exists | default(false) }}"
-      - "File path: {{ platform_file_check.stat.path | default('N/A') }}"
-  when:
-    - platform_id is defined
-    - platform_id != ""
-    - platform_file_check is defined
-  tags: cloudflare_configuration
-
 - name: cloudflare | Load platform-specific configuration dynamically
   ansible.builtin.include_vars:
     file: "{{ item }}"

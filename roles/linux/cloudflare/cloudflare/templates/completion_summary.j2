@@ -1,10 +1,10 @@
 ---
-- "======================================================================"
+- "====================================================================="
 - "  Cloudflare Configuration Complete!"
-- "======================================================================"
+- "====================================================================="
 - ""
 - "Configuration Details:"
-- "  Domain: {{ effective_zone_name | default(cloudflare_zone_name) }}"
+- "  Domain: {{ platform_domain | default(effective_zone_name) | default(cloudflare_zone_name) }}"
 - "  Platform: {{ platform_id | default('(domain-wide operation)') }}"
 - "  Scope: {{ cloudflare_scope | default('all') }}"
 - "  Ticket: {{ ticket_number | default('N/A') }}"
@@ -13,7 +13,7 @@
 {% if cloudflare_scope | default('all') in ['all', 'dns'] %}
 - "  ✓ DNS records ({{ cloudflare_dns_records | default([]) | length }} records):"
 {% for record in cloudflare_dns_records | default([]) %}
-- "    - {{ record.name }}.{{ effective_zone_name | default(cloudflare_zone_name) }} → {{ record.content }} ({{ record.type }})"
+- "    - {{ record.name }}.{{ platform_domain | default(effective_zone_name) | default(cloudflare_zone_name) }} → {{ record.content }} ({{ record.type }})"
 {% endfor %}
 {% endif %}
 {% if cloudflare_scope | default('all') in ['all', 'domain'] %}
@@ -28,5 +28,5 @@
 - ""
 - "Verify your changes:"
 - "  Dashboard: https://dash.cloudflare.com/"
-- "  Domain: {{ effective_zone_name | default(cloudflare_zone_name) }}"
+- "  Domain: {{ platform_domain | default(effective_zone_name) | default(cloudflare_zone_name) }}"
 - "======================================================================"
