@@ -34,6 +34,7 @@
       {{ records }}
   when:
     - platform_id is defined
+  no_log: true
   tags:
     - cloudflare_configuration
     - cloudflare_dns
@@ -41,6 +42,7 @@
 - name: cloudflare dns | Set target zone name
   ansible.builtin.set_fact:
     target_zone_name: "{{ platform_domain | default(effective_zone_name) | default(cloudflare_zone_name) }}"
+  no_log: true
   tags:
     - cloudflare_configuration
     - cloudflare_dns
@@ -75,7 +77,10 @@
       X-Auth-Key: "{{ cloudflare_api_key }}"
     return_content: true
     validate_certs: true
+    status_code: [200]
   register: zone_lookup
+  failed_when: false
+  no_log: true
   when:
     - target_zone_name is defined
     - cloudflare_dns_records is defined
@@ -93,10 +98,18 @@
     - zone_lookup.json is defined
     - zone_lookup.json.result is defined
     - zone_lookup.json.result | length > 0
+  no_log: true
   tags:
     - cloudflare_configuration
     - cloudflare_dns
     - cloudflare_dns_zone_lookup
+
+- name: cloudflare dns | Display zone lookup result
+  ansible.builtin.debug:
+    msg: "Zone ID: {{ cloudflare_zone_id | default('NOT FOUND') }}"
+  tags:
+    - cloudflare_configuration
+    - cloudflare_dns
 
 - name: cloudflare dns | Check if record exists
   ansible.builtin.uri:
@@ -107,10 +120,12 @@
       X-Auth-Key: "{{ cloudflare_api_key }}"
     return_content: true
     validate_certs: true
+    status_code: [200]
   register: dns_record_lookup
   loop: "{{ cloudflare_dns_records | default([]) }}"
   loop_control:
     label: "{{ item.name }} ({{ item.type }})"
+  no_log: true
   when:
     - cloudflare_zone_id is defined
     - cloudflare_dns_records is defined
@@ -119,6 +134,19 @@
     - cloudflare_configuration
     - cloudflare_dns
     - cloudflare_dns_lookup
+
+- name: cloudflare dns | Display record existence check
+  ansible.builtin.debug:
+    msg: "{{ item.item.name }}.{{ target_zone_name }}: {{ 'EXISTS' if (item.json.result | length > 0) else 'NOT FOUND' }}"
+  loop: "{{ dns_record_lookup.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.name }}"
+  when:
+    - dns_record_lookup is defined
+    - dns_record_lookup.results is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_dns
 
 - name: cloudflare dns | Display dry-run changes (no actual changes)
   ansible.builtin.debug:
@@ -167,9 +195,11 @@
       }}
     return_content: true
     validate_certs: true
+    status_code: [200]
   loop: "{{ cloudflare_dns_records | default([]) | zip(dns_record_lookup.results | default([])) | list }}"
   loop_control:
     label: "{{ item.0.name }} ({{ item.0.type }})"
+  no_log: true
   when:
     - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
@@ -182,6 +212,20 @@
     - cloudflare_dns
     - cloudflare_dns_create
     - cloudflare_dns_update
+
+- name: cloudflare dns | Display DNS changes made
+  ansible.builtin.debug:
+    msg: "{{ item.item.0.name }}.{{ target_zone_name }}: {{ 'UPDATED' if (item.item.1.json.result | length > 0) else 'CREATED' }} successfully"
+  loop: "{{ dns_create_result.results | default([]) }}"
+  loop_control:
+    label: "{{ item.item.0.name }}"
+  when:
+    - dns_create_result is defined
+    - dns_create_result.results is defined
+    - not item.skipped | default(false)
+  tags:
+    - cloudflare_configuration
+    - cloudflare_dns
 
 - name: cloudflare dns | Display DNS configuration summary
   ansible.builtin.debug:
