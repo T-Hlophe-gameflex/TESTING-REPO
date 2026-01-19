@@ -47,24 +47,28 @@
   ansible.builtin.include_vars:
     file: "{{ role_path }}/vars/zone.yml"
   ignore_errors: true
+  no_log: true
   tags: cloudflare_configuration
 
 - name: cloudflare | Load global configuration
   ansible.builtin.include_vars:
     file: "{{ role_path }}/vars/global.yml"
   ignore_errors: true
+  no_log: true
   tags: cloudflare_configuration
 
 - name: cloudflare | Load domain-level configuration
   ansible.builtin.include_vars:
     file: "{{ role_path }}/vars/domain.yml"
   ignore_errors: true
+  no_log: true
   tags: cloudflare_configuration
 
 - name: cloudflare | Load network-level configuration
   ansible.builtin.include_vars:
     file: "{{ role_path }}/vars/network.yml"
   ignore_errors: true
+  no_log: true
   tags: cloudflare_configuration
 
 - name: cloudflare | DNS records will be loaded from platform files
@@ -80,6 +84,7 @@
     file: "{{ role_path }}/vars/notifications.yml"
   when: enable_notifications | default(true)
   ignore_errors: true
+  no_log: true
   tags: cloudflare_configuration
 
 - name: cloudflare | Debug platform file paths
@@ -121,6 +126,7 @@
   when:
     - platform_id is defined
     - platform_id != ""
+  no_log: true
   tags: cloudflare_configuration
 
 - name: cloudflare | Load platform-specific configuration from inventory
@@ -185,6 +191,7 @@
   delay: "{{ cloudflare_api_delay | default(5) }}"
   until: _api_token_validation.status == 200
   when: validate_api_token | default(true) | bool
+  no_log: true
   tags: cloudflare_configuration
 
 - name: cloudflare validation | Verify account access
@@ -204,6 +211,7 @@
   delay: "{{ cloudflare_api_delay | default(5) }}"
   until: _account_verification.status == 200
   when: validate_api_token | default(true) | bool
+  no_log: true
   tags: cloudflare_configuration
 
 - name: cloudflare validation | Display summary
