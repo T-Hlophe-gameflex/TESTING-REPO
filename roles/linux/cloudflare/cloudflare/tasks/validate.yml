@@ -99,6 +99,7 @@
     file: "{{ item }}"
   with_first_found:
     - files:
+        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
         - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/production/{{ platform_id }}.yml"
         - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/staging/{{ platform_id }}.yml"
         - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/preprod/{{ platform_id }}.yml"
@@ -137,6 +138,7 @@
       Platform ID: {{ platform_id | default('N/A') }}
       
       Searched in these locations:
+        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/global/{{ platform_id | default('N/A') }}.yml
         - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/production/{{ platform_id | default('N/A') }}.yml
         - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/staging/{{ platform_id | default('N/A') }}.yml
         - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/preprod/{{ platform_id | default('N/A') }}.yml
