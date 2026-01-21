@@ -133,8 +133,17 @@
       - ipAddresses | length > 0
     fail_msg: |
       Platform configuration not loaded from inventory.
-      Expected file: {{ inventory_dir }}/group_vars/all/platforms/{{ platform_type }}/{{ platform_id }}.yml
-      Make sure platform file exists and contains:
+      Region: {{ cloudflare_region | default('TEST') }}
+      Platform ID: {{ platform_id | default('N/A') }}
+      
+      Searched in these locations:
+        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/production/{{ platform_id | default('N/A') }}.yml
+        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/staging/{{ platform_id | default('N/A') }}.yml
+        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/preprod/{{ platform_id | default('N/A') }}.yml
+        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/test/{{ platform_id | default('N/A') }}.yml
+        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/trunk/{{ platform_id | default('N/A') }}.yml
+      
+      Make sure platform file exists in the {{ cloudflare_region | default('TEST') }} inventory and contains:
         - platform_id
         - platform_type
         - ipAddresses
