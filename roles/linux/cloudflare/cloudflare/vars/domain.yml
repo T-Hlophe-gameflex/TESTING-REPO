@@ -98,8 +98,4 @@ cloudflare_domain_performance:
   http3: true
   zero_rtt: true
 
-cloudflare_domain_network:
-  ipv6: true
-  websockets: true
-  pseudo_ipv4: "add_header"
-  ip_geolocation: true
+

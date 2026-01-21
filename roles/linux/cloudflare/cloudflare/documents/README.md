@@ -5,11 +5,11 @@
 Manages Cloudflare DNS, security, performance, and network configurations across multiple domains and platforms using a **minimal configuration approach**. The role dynamically generates DNS records from simple IP address mappings, reducing configuration complexity from 50+ lines to 5-15 lines per platform.
 
 **Key Features:**
-- **Dynamic DNS Generation** - Automatically builds DNS records from `ipAddresses` dictionary and global standards
+- **Dynamic DNS Generation** - Automatically builds DNS records from `ipAddresses` dictionary and DNS standards
 - **Minimal Platform Files** - Only define unique IPs and custom DNS; standard records auto-generated
-- **Environment Organization** - Platforms organized by type (production, staging, global, test)
+- **Environment Organization** - Platforms organized by type (production, staging, test)
 - **Auto-Discovery** - AWX survey automatically discovers platforms from filesystem
-- **Flexible Overrides** - Platform-specific `dns_record_types` override global standards when needed
+- **Flexible Overrides** - Platform-specific `dns_record_types` override DNS standards when needed
 
 ---
 
@@ -22,18 +22,14 @@ cloudflare/
 ├── vars/
 │   ├── dns.yml            # DNS-specific configuration
 │   ├── domain.yml         # Domain-level settings
-│   ├── global.yml         # Global zone settings
 │   ├── network.yml        # Network and health check settings
-│   ├── notifications.yml  # Alert destinations
-│   └── zone.yml           # Zone definitions
+│   └── notifications.yml  # Alert destinations
 ├── tasks/
 │   ├── main.yml           # Task orchestration and workflow control
 │   ├── validate.yml       # Configuration validation and API credential checks
-│   ├── global.yml         # Zone management and global security settings
 │   ├── domain.yml         # SSL, cache, Argo, and DNSSEC configuration
 │   ├── network.yml        # Health checks and IP geolocation settings
 │   ├── dns.yml            # DNS record creation and updates
-│   ├── platform.yml       # Platform-specific firewall rules
 │   └── notifications.yml  # Email and webhook alert destinations
 └── documents/
     ├── README.md          # This comprehensive documentation
@@ -56,10 +52,8 @@ roles/linux/cloudflare/
 └── vars/
     ├── dns.yml                             # DNS configuration
     ├── domain.yml                          # Domain-level settings
-    ├── global.yml                          # Global zone settings
     ├── network.yml                         # Network and health checks
-    ├── notifications.yml                   # Alert destinations
-    └── zone.yml                            # Zone definitions
+    └── notifications.yml                   # Alert destinations
 ```
 
 **Inventory-Level (Environment-Specific):**
@@ -82,15 +76,12 @@ inventories/{IOM|LON|MIP|NJP|ONP|PAP}/
             ├── staging/                     # Staging platforms (S009, S016, S017, S019)
             │   ├── S009.yml
             │   └── ...
-            ├── trunk/                       # Trunk/Development platforms (T009)
-            │   └── T009.yml
-            └── global/                      # Global platforms (G000, G255)
-                ├── G000.yml
-                └── G255.yml
+            └── trunk/                       # Trunk/Development platforms (T009)
+                └── T009.yml
 ```
 
 **Key Differences:**
-- **IOM Inventory**: Manages preprod, staging, trunk, and global platforms on `iforium.com`
+- **IOM Inventory**: Manages preprod, staging, and trunk platforms on `iforium.com`
 - **LON Inventory**: Manages ONLY live platforms on `game-flex.eu`
 - **NOTE**: Directory path differs: LON uses `platform/` (singular), IOM uses `platforms/` (plural)
 - Other inventories (MIP, NJP, ONP, PAP) follow similar pattern for their regions
@@ -222,47 +213,6 @@ default_always_use_https: true
 2. For each record type, it looks up the IP from platform's `ipAddresses` dictionary using `ip_key`
 3. If IP exists, it creates DNS record named `{record_name}-{platform_id}` (e.g., `api-l012`)
 4. Result: Minimal platform files (5-15 lines) automatically generate full DNS configurations
-
-### Global Settings (cloudflare/vars/global.yml)
-
-Contains zone-wide security and performance settings:
-
-```yaml
-cloudflare_global_ssl_settings:
-  ssl: "strict"
-  min_tls_version: "1.2"
-  tls_1_3: "on"
-  opportunistic_encryption: "on"
-  automatic_https_rewrites: "on"
-  always_use_https: "on"
-
-cloudflare_global_security_settings:
-  security_level: "medium"
-  browser_check: "on"
-  challenge_ttl: 1800
-  privacy_pass: "on"
-  security_header:
-    enabled: true
-    max_age: 31536000
-
-cloudflare_global_performance_settings:
-  cache_level: "aggressive"
-  browser_cache_ttl: 14400
-  minify:
-    css: "on"
-    js: "on"
-    html: "on"
-  brotli: "on"
-  early_hints: "on"
-  http3: "on"
-  zero_rtt: "on"
-
-cloudflare_global_network_settings:
-  ipv6: "on"
-  websockets: "on"
-  pseudo_ipv4: "off"
-  ip_geolocation: "on"
-```
 
 ### Domain Settings (cloudflare/vars/domain.yml)
 
@@ -434,7 +384,6 @@ Platforms organized in subdirectories by type:
 
 - **production/** - L008-L025 (LON/US), P000-P019 (IOM)
 - **staging/** - S009, S016, S017, S019
-- **global/** - G000, G255
 - **test/** - T009
 
 **Loading Strategy:**
@@ -444,7 +393,6 @@ with_first_found:
   - platforms/{{ env_type }}/{{ platform_id }}.yml
   - platforms/production/{{ platform_id }}.yml
   - platforms/staging/{{ platform_id }}.yml
-  - platforms/global/{{ platform_id }}.yml
   - platforms/test/{{ platform_id }}.yml
 ```
 
@@ -458,42 +406,32 @@ with_first_found:
 2. **Platform Configuration Loading (NEW ARCHITECTURE)**
    - Loaded from: `inventories/{ENV}/group_vars/cloudflare/vars/platform.yml`
    - Variables: `standard_dns_record_types`, `cloudflare_domains`, `environment_domain_map`
-   - Used for: Global DNS standards and domain mappings
+   - Used for: DNS standards and domain mappings
    - **This is the central configuration that enables minimal platform files**
 
-3. **Zone Configuration Loading**
-   - Loaded from: `inventories/{ENV}/group_vars/cloudflare/vars/zone.yml`
-   - Variables: `cloudflare_zones`
-   - Used for: Zone management and validation
-
-4. **Global Settings Loading**
-   - Loaded from: `inventories/{ENV}/group_vars/cloudflare/vars/global.yml`
-   - Variables: SSL, security, performance, network settings
-   - Applied to: All zones in the configuration
-
-5. **Domain Settings Loading**
+3. **Domain Settings Loading**
    - Loaded from: `inventories/{ENV}/group_vars/cloudflare/vars/domain.yml`
    - Variables: SSL, Argo, cache, origin, DNSSEC settings
    - Applied to: Specific zone based on platform domain
 
-6. **Network Settings Loading**
+4. **Network Settings Loading**
    - Loaded from: `inventories/{ENV}/group_vars/cloudflare/vars/network.yml`
    - Variables: Health checks, monitoring settings
    - Applied to: Platform-specific endpoints
 
-7. **Notification Settings Loading**
+5. **Notification Settings Loading**
    - Loaded from: `inventories/{ENV}/group_vars/cloudflare/vars/notifications.yml`
    - Variables: Email and webhook destinations
    - Applied to: Account-level alerting
 
-8. **Platform-Specific Configuration Loading (Dynamic)**
+6. **Platform-Specific Configuration Loading (Dynamic)**
    - Loaded from: `inventories/{ENV}/group_vars/cloudflare/platforms/{env_type}/{platform_id}.yml`
    - Variables: `ipAddresses`, optional `dns_record_types`, platform metadata
    - Applied to: Specific platform when `platform_id` is provided
    - **Dynamic Loading:** Uses `with_first_found` to search multiple environment folders
    - **Minimal Files:** Only 5-15 lines defining IPs and custom DNS (if needed)
 
-9. **Dynamic DNS Record Generation (NEW)**
+7. **Dynamic DNS Record Generation (NEW)**
    - Executed in: `roles/linux/cloudflare/tasks/main.yml`
    - Process:
      1. Loops through `dns_record_types` (platform-specific) OR `standard_dns_record_types` (global)
@@ -548,12 +486,9 @@ dns_record_types:
 
 The role supports granular execution through scopes:
 
-- `all` - Complete configuration across all settings
-- `dns` - DNS records only
-- `domain` - Domain-level settings (SSL, cache, Argo)
-- `global` - Global zone settings and security headers
+- `dns` - DNS records only (most common)
+- `domain` - Domain-level settings (SSL, cache, Argo, DNSSEC)
 - `network` - Network configuration and health checks
-- `platform` - Platform-specific firewall rules
 - `notifications` - Alert destinations and webhooks
 
 ---
@@ -627,8 +562,7 @@ cloudflare_dns_records:
 
 **Inventory Usage:**
 - Reads: `cloudflare_api_email`, `cloudflare_api_key`, `cloudflare_account_id` from credentials.yml
-- Reads: `cloudflare_zones` from zone.yml (optional)
-- Reads: Global/domain/network/notification settings from respective files
+- Reads: Domain/network/notification settings from respective files
 - Reads: Platform config from platforms/{env_type}/{platform_id}.yml (dynamic)
 - Reads: `standard_dns_record_types` from platform.yml (used by DNS builder)
 
@@ -637,17 +571,9 @@ cloudflare_dns_records:
 - `cloudflare_config_dir` - Path to inventory cloudflare configs
 - All configuration variables loaded from inventory files
 
-### 2. Global Configuration (global.yml)
+### 2. Domain Configuration (domain.yml)
 
-**Purpose:** Manage zones and apply global settings
-
-**Steps:**
-- Display global configuration banner
-- Check if zone creation is allowed
-- Fetch existing zones from Cloudflare API
-- Initialize zone ID mapping dictionary
-- Build zone ID mapping from API results
-- Set primary zone facts for execution
+**Purpose:** Configure SSL, caching, Argo, and DNSSEC settings
 - Display zone mappings for verification
 - Sanitize performance settings (remove immutable keys)
 - Apply global SSL settings to all zones
@@ -687,6 +613,22 @@ cloudflare_dns_records:
 - Purge cache patterns if specified
 - Display domain configuration summary
 
+### 2. Domain Configuration (domain.yml)
+
+**Purpose:** Configure SSL, caching, Argo, and DNSSEC settings
+
+**Steps:**
+- Display domain configuration banner
+- Configure Universal SSL settings
+- Enable Argo Smart Routing
+- Enable Argo Tiered Caching
+- Configure cache rules for the zone
+- Set origin configuration settings
+- Enable DNSSEC
+- Configure Onion Routing settings
+- Purge cache to apply changes
+- Display domain configuration summary
+
 **Inventory Usage:**
 - Reads: `cloudflare_domain_ssl` from domain.yml
 - Reads: `cloudflare_domain_argo` from domain.yml
@@ -705,7 +647,7 @@ cloudflare_dns_records:
 - PATCH /zones/{zone_id}/dnssec
 - POST /zones/{zone_id}/purge_cache
 
-### 4. Network Configuration (network.yml)
+### 3. Network Configuration (network.yml)
 
 **Purpose:** Configure health checks and network monitoring
 
@@ -724,7 +666,7 @@ cloudflare_dns_records:
 - POST /zones/{zone_id}/healthchecks
 - PATCH /zones/{zone_id}/settings/ip_geolocation
 
-### 5. DNS Management (dns.yml)
+### 4. DNS Management (dns.yml)
 
 **Purpose:** Create and update DNS records (generated dynamically from platform data)
 
@@ -767,24 +709,7 @@ cloudflare_dns_records:
 - **Flexibility:** Override with custom `dns_record_types` when needed
 - **Documentation:** Comments automatically include platform and environment details
 
-### 6. Platform Configuration (platform.yml)
-
-**Purpose:** Apply platform-specific firewall rules
-
-**Steps:**
-- Display platform configuration banner
-- Skip if no platform_id provided
-- Create platform-specific firewall rules
-- Display platform configuration summary
-
-**Inventory Usage:**
-- Uses: `platform_id` from command line or survey
-- May use: Additional platform metadata from platform file
-
-**API Calls:**
-- POST /zones/{zone_id}/firewall/rules
-
-### 7. Notifications (notifications.yml)
+### 5. Notifications Configuration (notifications.yml)
 
 **Purpose:** Configure alert destinations
 
@@ -802,7 +727,7 @@ cloudflare_dns_records:
 - POST /accounts/{account_id}/alerting/v3/destinations/email
 - POST /accounts/{account_id}/alerting/v3/destinations/webhooks
 
-### 8. Completion Summary (main.yml)
+### 6. Completion Summary (main.yml)
 
 **Purpose:** Display final execution summary
 
@@ -824,7 +749,7 @@ cloudflare_dns_records:
 ### Execution Parameters
 - `ticket_number` - Change management ticket reference (required)
 - `platform_id` - Platform identifier (optional, required for DNS scope)
-- `cloudflare_scope` - Configuration scope (default: all)
+- `cloudflare_scope` - Configuration scope (default: dns)
 
 ### From Platform Configuration (platform.yml)
 - `standard_dns_record_types` - Global DNS standards with `ip_key` mappings
@@ -938,35 +863,19 @@ ansible-playbook cloudflare.yml \
 # Result: Creates @ and www records only (ignores global standards)
 ```
 
-### Apply all configurations to platform
+### Update domain settings for platform
 ```bash
 ansible-playbook cloudflare.yml \
   -i inventories/TEST/hosts \
   -e "platform_id=L008" \
-  -e "cloudflare_scope=all" \
+  -e "cloudflare_scope=domain" \
   -e "ticket_number=JIRA-1234"
 ```
 
 **What happens:**
-1. Loads all configuration files from TEST inventory
-2. Loads platform L008 configuration
-3. Applies global settings from global.yml to all zones
-4. Applies domain settings from domain.yml to game-flex.eu
-5. Creates DNS records from L008.yml
-6. Configures health checks using L008 platform metadata
-
-### Update global security settings only
-```bash
-ansible-playbook cloudflare.yml \
-  -i inventories/TEST/hosts \
-  -e "cloudflare_scope=global" \
-  -e "ticket_number=JIRA-1234"
-```
-
-**What happens:**
-1. Loads global.yml security settings
-2. Applies to all zones defined in zone.yml
-3. Skips DNS, domain, network, platform, and notification tasks
+1. Loads domain configuration from domain.yml
+2. Applies SSL, cache, Argo, and DNSSEC settings to game-flex.eu zone
+3. Skips DNS, network, and notification tasks
 
 ### Dry-run validation
 ```bash
@@ -993,10 +902,8 @@ ansible-playbook cloudflare.yml \
 - `cloudflare` - All Cloudflare tasks
 - `cloudflare_configuration` - Configuration tasks
 - `cloudflare_dns` - DNS record management
-- `cloudflare_global` - Global zone settings
 - `cloudflare_domain` - Domain-level settings
 - `cloudflare_network` - Network configuration
-- `cloudflare_platform` - Platform-specific rules
 - `cloudflare_notifications` - Alert configuration
 
 ### Granular Tags

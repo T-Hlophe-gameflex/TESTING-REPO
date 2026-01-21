@@ -3,7 +3,6 @@
 This template allows you to define platform DNS records dynamically using variables instead of listing each record individually.
 
 ## Platform Type Naming Convention:
-- **G** = Global (G000, G255)
 - **L** = Live/Production (L008, L016, L021, etc.)
 - **P** = Preprod/Pre-production (P000, P009, P016, P019)
 - **S** = Staging (S009, S016, S017, S019)
@@ -12,7 +11,6 @@ This template allows you to define platform DNS records dynamically using variab
 ## Directory Structure:
 ```
 inventories/{INVENTORY}/group_vars/all/platforms/
-├── global/    # Global platforms (G*)
 ├── live/      # Live/Production platforms (L*)
 ├── preprod/   # Pre-production platforms (P*)
 ├── staging/   # Staging platforms (S*)
@@ -24,7 +22,7 @@ inventories/{INVENTORY}/group_vars/all/platforms/
 ## Inventory Responsibilities:
 
 ### IOM Inventory
-- **Platforms**: Preprod (P*), Staging (S*), Trunk (T*), Global (G*)
+- **Platforms**: Preprod (P*), Staging (S*), Trunk (T*)
 - **Domain**: iforium.com
 - **Location**: Isle of Man
 
@@ -46,7 +44,7 @@ inventories/{INVENTORY}/group_vars/all/platforms/
 ---
 # Platform Identity
 platform_id: "L016"             # Full platform ID (must match filename)
-platform_type: "live"           # live, preprod, staging, trunk, or global
+platform_type: "live"           # live, preprod, staging, or trunk
 env_type: "live"                # Same as platform_type
 platform_domain: "game-flex.eu" # Domain for this platform (game-flex.eu or iforium.com)
 
@@ -59,7 +57,7 @@ ipAddresses:
   bonusplaythrough: "5.62.94.243"  # Bonus Playthrough service IP
   gamemanager: "5.62.94.246"    # Game Manager service IP
 
-# Optional: Override global DNS standards with custom records
+# Optional: Override DNS standards with custom records
 # dns_record_types:
 #   - name: "api"
 #     ip_key: "api"
@@ -71,9 +69,9 @@ ipAddresses:
 #     comment: "GameFlex via CloudFront CDN"
 ```
 
-## Global DNS Standards
+## Standard DNS Records
 
-DNS records are auto-generated from `ipAddresses` using global standards defined in `roles/linux/cloudflare/defaults/main.yml`:
+DNS records are auto-generated from `ipAddresses` using DNS standards defined in `roles/linux/cloudflare/defaults/main.yml`:
 
 ```yaml
 standard_dns_record_types:
@@ -129,7 +127,7 @@ gamemanager-l016.game-flex.eu      A      5.62.94.246   (proxied)
 
 ## Custom DNS Records
 
-Override global standards by defining `dns_record_types` in platform file:
+Override DNS standards by defining `dns_record_types` in platform file:
 
 ```yaml
 ---
@@ -143,7 +141,7 @@ ipAddresses:
   backoffice: "81.88.167.90"
   webapi: "81.88.167.90"
 
-# Custom DNS overrides global standards
+# Custom DNS overrides standard DNS records
 dns_record_types:
   - name: "gameflex"
     type: "CNAME"
@@ -174,7 +172,7 @@ webapi-s009.iforium.com            A      81.88.167.90
 ## Migration Steps:
 
 1. Identify all unique IPs in the platform
-2. Create `ipAddresses` dictionary with keys matching global standards (api, webapi, gameflex, etc.)
+2. Create `ipAddresses` dictionary with keys matching DNS standards (api, webapi, gameflex, etc.)
 3. Set `platform_domain` based on inventory:
    - IOM platforms: `iforium.com`
    - LON platforms: `game-flex.eu`
@@ -224,18 +222,6 @@ platform_domain: "iforium.com"
 
 ipAddresses:
   gameflex: "81.88.167.90"
-```
-
-### Global Platform (IOM Inventory)
-```yaml
----
-platform_id: "G000"
-platform_type: "global"
-env_type: "global"
-platform_domain: "iforium.com"
-
-ipAddresses:
-  gameflex: "81.88.167.81"
 ```
 
 ## Variables Reference:
