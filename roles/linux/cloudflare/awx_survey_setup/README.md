@@ -38,11 +38,10 @@ The role scans the filesystem for platform files instead of maintaining a hardco
 # Searches these directories
 - inventories/TEST/group_vars/cloudflare/platforms/production/
 - inventories/TEST/group_vars/cloudflare/platforms/staging/
-- inventories/TEST/group_vars/cloudflare/platforms/global/
 - inventories/TEST/group_vars/cloudflare/platforms/test/
 
 # Finds all *.yml files
-# Result: L008.yml, L012.yml, P000.yml, S009.yml, T009.yml, G000.yml, etc.
+# Result: L008.yml, L012.yml, P000.yml, S009.yml, T009.yml, etc.
 ```
 
 **Benefits:**
@@ -57,22 +56,21 @@ Platforms are sorted by prefix and numeric value for organized dropdown:
 
 ```yaml
 # Input (unsorted from filesystem)
-[P019, P009, L020, L008, G000, S009, T009, G255]
+[P019, P009, L020, L008, S009, T009]
 
 # Processing
-Groups by prefix: G=[G000, G255], L=[L008, L020], P=[P009, P019], S=[S009], T=[T009]
+Groups by prefix: L=[L008, L020], P=[P009, P019], S=[S009], T=[T009]
 Sorts each group numerically
 
 # Output (sorted for survey)
-[G000, G255, L008, L020, P009, P019, S009, T009]
+[L008, L020, P009, P019, S009, T009]
 ```
 
 **Sort Order:**
-1. G (Global) - G000, G255
-2. L (LON/Location) - L008-L025
-3. P (Production IOM) - P000-P019
-4. S (Staging) - S009, S016, S017, S019
-5. T (Test) - T009
+1. L (LON/Location) - L008-L025
+2. P (Production IOM) - P000-P019
+3. S (Staging) - S009, S016, S017, S019
+4. T (Test) - T009
 
 ### 3. Domain Loading
 
@@ -83,12 +81,8 @@ Domains loaded from central configuration instead of hardcoded:
 cloudflare_domains:
   - name: "game-flex.eu"
     description: "Game Flex EU - European production gaming"
-  - name: "game-flex.us"
-    description: "Game Flex US - US production gaming"
-  - name: "route-game-flex.eu"
-    description: "Route Game Flex EU - IOM production gaming"
   - name: "iforium.com"
-    description: "Iforium - Production, staging, and global services"
+    description: "Iforium - Production, staging, and trunk services"
 ```
 
 **Benefits:**
@@ -120,7 +114,7 @@ choices: []  # Dynamically populated from cloudflare_platforms list
 - Selected value becomes `platform_id` variable passed to Cloudflare role
 - Cloudflare role uses this to load: `platforms/{platform_id}.yml`
 
-**User Experience:** Dropdown showing all 26 platforms
+**User Experience:** Dropdown showing all available platforms (auto-discovered from filesystem)
 
 ### Question 2: Configuration Scope
 
@@ -129,19 +123,21 @@ choices: []  # Dynamically populated from cloudflare_platforms list
 variable: cloudflare_scope
 type: multiplechoice
 required: true
-default: "all"
-choices: []  # Dynamically populated from cloudflare_scopes list
+default: "dns"
+choices: ["dns", "domain", "network", "notifications"]
 ```
 
-**Purpose:** Controls which configuration files are loaded and applied
+**Purpose:** Controls which configuration tasks are executed
 
 **Inventory Integration:**
-- Values come from `cloudflare_scopes` list in defaults/main.yml
-- Each scope maps to specific configuration files in inventory
+- `dns` - DNS records only (most common, 95% of deployments)
+- `domain` - Domain-level settings (SSL, cache, Argo, DNSSEC)
+- `network` - Network configuration and health checks
+- `notifications` - Alert destinations and webhooks
 - Selected value determines which tasks execute in Cloudflare role
 - Controls which inventory config files are loaded and applied
 
-**User Experience:** Dropdown showing 7 scope options with descriptions
+**User Experience:** Dropdown showing 4 scope options with descriptions
 
 ### Question 3: Zone Override
 
@@ -158,7 +154,7 @@ default: ""
 **Inventory Integration:**
 - Overrides `platform_domain` from platform file
 - Overrides `effective_zone_name` computed in validate.yml
-- Must match zone defined in `zone.yml`
+- Must be a valid Cloudflare zone in your account
 - Useful for testing or cross-domain operations
 
 **User Experience:** Optional text field for domain name (e.g., game-flex.eu)
@@ -351,17 +347,15 @@ When platforms are decommissioned:
 - `L` - London/EU production platforms
 - `P` - Production IOM platforms  
 - `S` - Staging platforms
-- `T` - Test platforms
-- `G` - Global platforms
+- `T` - Test/Trunk platforms
 
 **Numbers:**
 - 000-999 - Platform identifier
 - Must be unique within prefix
 
 **Domain Mapping:**
-- L### (EU) → game-flex.eu
-- L### (US 020-025) → game-flex.us
-- P###, S###, T###, G### → iforium.com
+- L### → game-flex.eu
+- P###, S###, T### → iforium.com
 
 ---
 
@@ -377,8 +371,8 @@ ansible-playbook awx_setup.yml \
 
 **What happens:**
 1. Connects to AWX using credentials from `inventories/TEST/group_vars/all/credentials.yml`
-2. Loads platform list (26 platforms) from `roles/linux/awx_survey_setup/defaults/main.yml`
-3. Generates survey JSON with 5 questions
+2. Auto-discovers platforms from filesystem (searches production/, staging/, test/ directories)
+3. Generates survey JSON with 5 questions (platform, scope, zone override, ticket, DNS override)
 4. Applies survey to "Cloudflare Configuration" job template
 5. Enables survey mode on template
 
@@ -434,12 +428,12 @@ The template dynamically generates survey JSON:
     },
     {
       "question_name": "Configuration Scope",
-      "question_description": "Select what to configure",
+      "question_description": "Select what to deploy: dns=DNS records only (most common), domain=SSL/cache/WAF settings, network=Health checks, notifications=Alerts",
       "required": true,
       "type": "multiplechoice",
       "variable": "cloudflare_scope",
-      "choices": {{ cloudflare_scopes | map(attribute='value') | list | to_json }},
-      "default": "all"
+      "choices": ["dns", "domain", "network", "notifications"],
+      "default": "dns"
     }
     // ... additional questions ...
   ]
@@ -533,7 +527,7 @@ ticket_number: "JIRA-1234"
 **Inventory Loading:**
 1. Playbook starts with IOM inventory
 2. Loads credentials from `inventories/IOM/group_vars/all/credentials.yml`
-3. Loads zone config from `inventories/IOM/group_vars/cloudflare/vars/zone.yml`
+3. Loads domain/network/notifications config from respective vars files
 4. validate.yml dynamically loads `inventories/IOM/group_vars/cloudflare/platforms/production/P016.yml`
 
 **Configuration Extracted:**
