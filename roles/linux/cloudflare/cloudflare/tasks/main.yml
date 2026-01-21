@@ -17,13 +17,6 @@
   tags:
     - cloudflare_configuration
 
-- import_tasks: global.yml
-  run_once: true
-  when: cloudflare_scope | default('all') in ['all', 'global']
-  tags:
-    - cloudflare_configuration
-    - cloudflare_global
-
 - import_tasks: domain.yml
   run_once: true
   when: cloudflare_scope | default('all') in ['all', 'domain']
