@@ -43,20 +43,6 @@
     success_msg: "✓ All required variables validated"
   tags: cloudflare_configuration
 
-- name: cloudflare | Load zone configuration
-  ansible.builtin.include_vars:
-    file: "{{ role_path }}/vars/zone.yml"
-  ignore_errors: true
-  no_log: true
-  tags: cloudflare_configuration
-
-- name: cloudflare | Load global configuration
-  ansible.builtin.include_vars:
-    file: "{{ role_path }}/vars/global.yml"
-  ignore_errors: true
-  no_log: true
-  tags: cloudflare_configuration
-
 - name: cloudflare | Load domain-level configuration
   ansible.builtin.include_vars:
     file: "{{ role_path }}/vars/domain.yml"
