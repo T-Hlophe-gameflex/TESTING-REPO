@@ -116,7 +116,8 @@
     msg:
       - "Platform configuration loaded via Ansible inventory group_vars"
       - "Platform: {{ platform_id | default('N/A') }}"
-      - "Environment: {{ platform_type }}"
+      - "Region: {{ cloudflare_region | default('TEST') }}"
+      - "Environment: {{ platform_type | default('N/A') }}"
       - "IP Addresses: {{ ipAddresses | default({}) | length }} configured"
   tags: cloudflare_configuration
   when:
