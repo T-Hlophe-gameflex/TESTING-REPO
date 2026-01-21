@@ -13,6 +13,15 @@
       "required": true
     },
     {
+      "question_name": "Region",
+      "question_description": "Select the region/inventory where the platform is located (IOM=Isle of Man, TEST=Testing)",
+      "variable": "cloudflare_region",
+      "type": "multiplechoice",
+      "choices": ["IOM", "TEST"],
+      "default": "TEST",
+      "required": true
+    },
+    {
       "question_name": "Platform Selection",
       "question_description": "Select the platform to deploy (L=Production, S=Staging, T=Test, G=Global). Domain is auto-detected from platform configuration.",
       "variable": "platform_id",

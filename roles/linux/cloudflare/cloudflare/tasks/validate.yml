@@ -78,7 +78,8 @@
     msg:
       - "Platform ID: {{ platform_id }}"
       - "Project Dir: {{ playbook_dir }}"
-      - "Looking for platform file at: {{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/global/{{ platform_id }}.yml"
+      - "Region: {{ cloudflare_region | default('TEST') }}"
+      - "Looking for platform file in: {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/"
   when:
     - platform_id is defined
     - platform_id != ""
@@ -86,7 +87,7 @@
 
 - name: cloudflare | Check if platform file exists
   ansible.builtin.stat:
-    path: "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/global/{{ platform_id }}.yml"
+    path: "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/production/{{ platform_id }}.yml"
   register: platform_file_check
   when:
     - platform_id is defined
@@ -98,16 +99,11 @@
     file: "{{ item }}"
   with_first_found:
     - files:
-        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/global/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/production/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/staging/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/test/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/TEST/group_vars/all/platforms/trunk/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/global/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/production/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/preprod/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/staging/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/IOM/group_vars/all/platforms/trunk/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/production/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/staging/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/preprod/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/test/{{ platform_id }}.yml"
+        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/trunk/{{ platform_id }}.yml"
       skip: true
   when:
     - platform_id is defined
