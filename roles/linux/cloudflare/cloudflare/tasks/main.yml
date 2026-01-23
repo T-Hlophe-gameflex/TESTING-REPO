@@ -1,24 +1,24 @@
 ---
 
-- name: cloudflare | Store original dry-run value from survey
+- name: cloudflare | Store original deployment mode from survey
   ansible.builtin.set_fact:
-    _original_dry_run_value: "{{ cloudflare_dry_run | default(false) }}"
+    _deployment_mode: "{{ cloudflare_dry_run | default('Disable') }}"
   tags:
     - always
 
-- name: cloudflare | Set dry-run mode
+- name: cloudflare | Set dry-run mode based on deployment choice
   ansible.builtin.set_fact:
-    cloudflare_dry_run: "{{ ansible_check_mode | default(false) or (_original_dry_run_value if _original_dry_run_value is boolean else (_original_dry_run_value | string | lower == 'true')) }}"
+    cloudflare_dry_run: "{{ _deployment_mode | string | lower == 'disable' }}"
   tags:
     - always
 
-- name: cloudflare | Display dry-run mode status
+- name: cloudflare | Display deployment mode status
   ansible.builtin.debug:
     msg: 
       - "======================================================================"
-      - "{% if cloudflare_dry_run %}⚠️  DRY-RUN MODE ENABLED - No changes will be made{% else %}✓ DEPLOY MODE - Changes will be applied{% endif %}"
-      - "  Survey value: {{ _original_dry_run_value }}"
-      - "  Effective mode: {{ 'DRY RUN' if cloudflare_dry_run else 'DEPLOY' }}"
+      - "{% if cloudflare_dry_run %}  DRY-RUN MODE - Preview only (no changes will be applied){% else %}✓ DEPLOYMENT MODE - Changes will be applied to Cloudflare{% endif %}"
+      - "  User selected: {{ _deployment_mode }}"
+      - "  Deployment: {{ 'DISABLED (Preview only)' if cloudflare_dry_run else 'ENABLED (Making changes)' }}"
       - "======================================================================"
   tags:
     - always

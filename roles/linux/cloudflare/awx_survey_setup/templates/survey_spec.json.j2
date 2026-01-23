@@ -44,12 +44,12 @@
       "required": true
     },
     {
-      "question_name": "Dry Run Mode",
-      "question_description": "Preview changes without applying them. Recommended for first-time deployments and validating changes.",
+      "question_name": "Deployment Mode",
+      "question_description": "Enable: Deploy changes to Cloudflare | Disable: Preview only (dry-run mode, no changes applied)",
       "variable": "cloudflare_dry_run",
       "type": "multiplechoice",
-      "choices": ["false", "true"],
-      "default": "false",
+      "choices": ["Enable", "Disable"],
+      "default": "Disable",
       "required": true
     }
   ]
