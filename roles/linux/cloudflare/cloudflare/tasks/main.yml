@@ -2,13 +2,18 @@
 
 - name: cloudflare | Set dry-run mode
   ansible.builtin.set_fact:
-    cloudflare_dry_run: "{{ ansible_check_mode | default(false) or (cloudflare_dry_run | default(false) | bool) }}"
+    cloudflare_dry_run: "{{ ansible_check_mode | default(false) or (cloudflare_dry_run | default('false') | lower == 'true') }}"
   tags:
     - always
 
 - name: cloudflare | Display dry-run mode status
   ansible.builtin.debug:
-    msg: "{{ 'DRY-RUN MODE ENABLED - No changes will be made' if cloudflare_dry_run else '✓ DEPLOY MODE - Changes will be applied' }}"
+    msg: 
+      - "{{ '=' * 70 }}"
+      - "{{ ' DRY-RUN MODE ENABLED - No changes will be made' if cloudflare_dry_run else '✓ DEPLOY MODE - Changes will be applied' }}"
+      - "  Survey value: {{ lookup('vars', 'cloudflare_dry_run', default='not set') }}"
+      - "  Effective mode: {{ 'DRY RUN' if cloudflare_dry_run else 'DEPLOY' }}"
+      - "{{ '=' * 70 }}"
   tags:
     - always
 
