@@ -1,8 +1,14 @@
 ---
 
+- name: cloudflare | Store original dry-run value from survey
+  ansible.builtin.set_fact:
+    _original_dry_run_value: "{{ cloudflare_dry_run | default('false') }}"
+  tags:
+    - always
+
 - name: cloudflare | Set dry-run mode
   ansible.builtin.set_fact:
-    cloudflare_dry_run: "{{ ansible_check_mode | default(false) or (cloudflare_dry_run | default('false') | lower == 'true') }}"
+    cloudflare_dry_run: "{{ ansible_check_mode | default(false) or (_original_dry_run_value | lower == 'true') }}"
   tags:
     - always
 
@@ -11,7 +17,7 @@
     msg: 
       - "{{ '=' * 70 }}"
       - "{{ ' DRY-RUN MODE ENABLED - No changes will be made' if cloudflare_dry_run else '✓ DEPLOY MODE - Changes will be applied' }}"
-      - "  Survey value: {{ lookup('vars', 'cloudflare_dry_run', default='not set') }}"
+      - "  Survey value: {{ _original_dry_run_value }}"
       - "  Effective mode: {{ 'DRY RUN' if cloudflare_dry_run else 'DEPLOY' }}"
       - "{{ '=' * 70 }}"
   tags:
