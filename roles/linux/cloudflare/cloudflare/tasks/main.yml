@@ -16,7 +16,7 @@
   ansible.builtin.debug:
     msg: 
       - "======================================================================"
-      - "{% if cloudflare_dry_run | bool %}⚠️  DRY-RUN MODE - Preview only (no changes will be applied){% else %}✓ DEPLOYMENT MODE - Changes will be applied to Cloudflare{% endif %}"
+      - "{% if cloudflare_dry_run | bool %}  DRY-RUN MODE - Preview only (no changes will be applied){% else %}✓ DEPLOYMENT MODE - Changes will be applied to Cloudflare{% endif %}"
       - "  Dry Run: {{ _dry_run_mode }}"
       - "  Mode: {{ 'Preview Only' if cloudflare_dry_run | bool else 'Deploy Changes' }}"
       - "======================================================================"
