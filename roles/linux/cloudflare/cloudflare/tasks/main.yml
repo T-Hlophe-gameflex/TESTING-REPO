@@ -2,13 +2,13 @@
 
 - name: cloudflare | Store original dry-run value from survey
   ansible.builtin.set_fact:
-    _original_dry_run_value: "{{ cloudflare_dry_run | default('false') }}"
+    _original_dry_run_value: "{{ cloudflare_dry_run | default(false) }}"
   tags:
     - always
 
 - name: cloudflare | Set dry-run mode
   ansible.builtin.set_fact:
-    cloudflare_dry_run: "{{ ansible_check_mode | default(false) or (_original_dry_run_value | lower == 'true') }}"
+    cloudflare_dry_run: "{{ ansible_check_mode | default(false) or (_original_dry_run_value if _original_dry_run_value is boolean else (_original_dry_run_value | string | lower == 'true')) }}"
   tags:
     - always
 
