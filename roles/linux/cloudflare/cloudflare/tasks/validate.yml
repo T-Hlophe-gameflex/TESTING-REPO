@@ -85,30 +85,36 @@
     - platform_id != ""
   tags: cloudflare_configuration
 
-- name: cloudflare | Check if platform file exists
-  ansible.builtin.stat:
-    path: "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/production/{{ platform_id }}.yml"
-  register: platform_file_check
+- name: cloudflare | Find platform environment directories in selected region
+  ansible.builtin.find:
+    paths: "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms"
+    file_type: directory
+    recurse: no
+  register: platform_env_dirs
   when:
     - platform_id is defined
     - platform_id != ""
+  tags: cloudflare_configuration
+
+- name: cloudflare | Build platform file search paths
+  ansible.builtin.set_fact:
+    platform_search_paths: "{{ platform_env_dirs.files | map(attribute='path') | map('regex_replace', '$', '/' + platform_id + '.yml') | list }}"
+  when:
+    - platform_id is defined
+    - platform_id != ""
+    - platform_env_dirs.matched > 0
   tags: cloudflare_configuration
 
 - name: cloudflare | Load platform-specific configuration dynamically
   ansible.builtin.include_vars:
     file: "{{ item }}"
   with_first_found:
-    - files:
-        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/global/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/production/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/staging/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/preprod/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/test/{{ platform_id }}.yml"
-        - "{{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/trunk/{{ platform_id }}.yml"
+    - files: "{{ platform_search_paths }}"
       skip: true
   when:
     - platform_id is defined
     - platform_id != ""
+    - platform_search_paths is defined
   no_log: true
   tags: cloudflare_configuration
 
@@ -138,12 +144,13 @@
       Platform ID: {{ platform_id | default('N/A') }}
       
       Searched in these locations:
-        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/global/{{ platform_id | default('N/A') }}.yml
-        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/production/{{ platform_id | default('N/A') }}.yml
-        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/staging/{{ platform_id | default('N/A') }}.yml
-        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/preprod/{{ platform_id | default('N/A') }}.yml
-        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/test/{{ platform_id | default('N/A') }}.yml
-        - {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/trunk/{{ platform_id | default('N/A') }}.yml
+      {% if platform_search_paths is defined %}
+      {% for path in platform_search_paths %}
+        - {{ path }}
+      {% endfor %}
+      {% else %}
+        - No environment directories found in {{ playbook_dir }}/inventories/{{ cloudflare_region | default('TEST') }}/group_vars/all/platforms/
+      {% endif %}
       
       Make sure platform file exists in the {{ cloudflare_region | default('TEST') }} inventory and contains:
         - platform_id
