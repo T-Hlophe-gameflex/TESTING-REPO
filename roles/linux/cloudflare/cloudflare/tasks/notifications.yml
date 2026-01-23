@@ -10,7 +10,7 @@
 - name: cloudflare notifications | Display dry-run email destination creation
   ansible.builtin.debug:
     msg:
-      - "📧 DRY-RUN: Would CREATE {{ cloudflare_notification_email_destinations | length }} email destination(s):"
+      - " DRY-RUN: Would CREATE {{ cloudflare_notification_email_destinations | length }} email destination(s):"
       - "{% for dest in cloudflare_notification_email_destinations %}  - {{ dest.name }}: {{ dest.email }}{% endfor %}"
   loop: []
   when:
@@ -25,7 +25,7 @@
 - name: cloudflare notifications | Display dry-run webhook destination creation
   ansible.builtin.debug:
     msg:
-      - "🔗 DRY-RUN: Would CREATE {{ cloudflare_notification_webhook_destinations | length }} webhook destination(s):"
+      - " DRY-RUN: Would CREATE {{ cloudflare_notification_webhook_destinations | length }} webhook destination(s):"
       - "{% for dest in cloudflare_notification_webhook_destinations %}  - {{ dest.name }}: {{ dest.url }}{% endfor %}"
   loop: []
   when:

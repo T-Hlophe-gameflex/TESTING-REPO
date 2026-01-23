@@ -95,7 +95,7 @@
 - name: cloudflare domain | Display dry-run Argo configuration
   ansible.builtin.debug:
     msg:
-      - "⚙️  DRY-RUN: Would CONFIGURE Argo settings:"
+      - "  DRY-RUN: Would CONFIGURE Argo settings:"
       - "  Smart Routing: {{ 'ENABLED' if cloudflare_domain_argo.smart_routing else 'DISABLED' }}"
       - "  Tiered Caching: {{ 'ENABLED' if cloudflare_domain_argo.tiered_caching else 'DISABLED' }}"
   when:
@@ -184,7 +184,7 @@
 - name: cloudflare domain | Display dry-run cache rules
   ansible.builtin.debug:
     msg:
-      - "📦 DRY-RUN: Would CREATE/UPDATE {{ cloudflare_domain_cache.cache_rules | length }} cache rule(s):"
+      - " DRY-RUN: Would CREATE/UPDATE {{ cloudflare_domain_cache.cache_rules | length }} cache rule(s):"
       - "{% for rule in cloudflare_domain_cache.cache_rules %}  - {{ rule.description }}: {{ rule.expression }}{% endfor %}"
   when:
     - cloudflare_dry_run | default(false) | bool
@@ -251,7 +251,7 @@
 - name: cloudflare domain | Display dry-run DNSSEC configuration
   ansible.builtin.debug:
     msg:
-      - "🔐 DRY-RUN: Would {{ 'ENABLE' if cloudflare_domain_dnssec.enabled else 'DISABLE' }} DNSSEC"
+      - " DRY-RUN: Would {{ 'ENABLE' if cloudflare_domain_dnssec.enabled else 'DISABLE' }} DNSSEC"
   when:
     - cloudflare_dry_run | default(false) | bool
     - cloudflare_zone_id is defined
@@ -290,7 +290,7 @@
 - name: cloudflare domain | Display dry-run Onion Routing configuration
   ansible.builtin.debug:
     msg:
-      - "🧅 DRY-RUN: Would {{ 'ENABLE' if cloudflare_domain_onion_routing.enabled else 'DISABLE' }} Onion Routing (Tor support)"
+      - " DRY-RUN: Would {{ 'ENABLE' if cloudflare_domain_onion_routing.enabled else 'DISABLE' }} Onion Routing (Tor support)"
   when:
     - cloudflare_dry_run | default(false) | bool
     - cloudflare_zone_id is defined
@@ -395,7 +395,7 @@
 - name: cloudflare domain | Display dry-run page rules creation
   ansible.builtin.debug:
     msg:
-      - "📄 DRY-RUN: Would CREATE/UPDATE {{ _all_page_rules | length }} page rule(s):"
+      - " DRY-RUN: Would CREATE/UPDATE {{ _all_page_rules | length }} page rule(s):"
       - "{% for rule in _all_page_rules %}  - Priority {{ rule.priority }}: {{ rule.targets[0].constraint.value }}{% endfor %}"
   when:
     - cloudflare_dry_run | default(false) | bool

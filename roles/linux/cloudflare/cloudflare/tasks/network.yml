@@ -9,7 +9,7 @@
 - name: cloudflare network | Display dry-run health check creation
   ansible.builtin.debug:
     msg:
-      - "🏥 DRY-RUN: Would CREATE {{ cloudflare_network_health_checks | length }} health check(s):"
+      - " DRY-RUN: Would CREATE {{ cloudflare_network_health_checks | length }} health check(s):"
       - "{% for check in cloudflare_network_health_checks %}  - {{ check.name }}: {{ check.type | default('https') }}://{{ check.address }}{{ check.path | default('/') }} (Interval: {{ check.interval | default(60) }}s){% endfor %}"
   loop: []
   when:
@@ -24,7 +24,7 @@
 - name: cloudflare network | Display dry-run IP Geolocation setting
   ansible.builtin.debug:
     msg:
-      - "🌍 DRY-RUN: Would {{ 'ENABLE' if cloudflare_network_ip_geolocation.enabled else 'DISABLE' }} IP Geolocation"
+      - " DRY-RUN: Would {{ 'ENABLE' if cloudflare_network_ip_geolocation.enabled else 'DISABLE' }} IP Geolocation"
   when:
     - cloudflare_dry_run | default(false) | bool
     - cloudflare_zone_id is defined
