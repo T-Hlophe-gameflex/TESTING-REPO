@@ -16,7 +16,7 @@
   ansible.builtin.debug:
     msg: 
       - "{{ '=' * 70 }}"
-      - "{{ ' DRY-RUN MODE ENABLED - No changes will be made' if cloudflare_dry_run else '✓ DEPLOY MODE - Changes will be applied' }}"
+      - "{{ 'DRY-RUN MODE ENABLED - No changes will be made' if cloudflare_dry_run else 'DEPLOY MODE - Changes will be applied' }}"
       - "  Survey value: {{ _original_dry_run_value }}"
       - "  Effective mode: {{ 'DRY RUN' if cloudflare_dry_run else 'DEPLOY' }}"
       - "{{ '=' * 70 }}"
