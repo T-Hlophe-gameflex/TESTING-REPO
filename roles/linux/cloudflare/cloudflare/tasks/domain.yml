@@ -92,6 +92,21 @@
     - cloudflare_domain
     - cloudflare_ssl
 
+- name: cloudflare domain | Display dry-run Argo configuration
+  ansible.builtin.debug:
+    msg:
+      - "⚙️  DRY-RUN: Would CONFIGURE Argo settings:"
+      - "  Smart Routing: {{ 'ENABLED' if cloudflare_domain_argo.smart_routing else 'DISABLED' }}"
+      - "  Tiered Caching: {{ 'ENABLED' if cloudflare_domain_argo.tiered_caching else 'DISABLED' }}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_argo is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_argo
+
 - name: cloudflare domain | configure Argo smart routing
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/argo/smart_routing"
@@ -166,6 +181,38 @@
     - cloudflare_domain
     - cloudflare_cache
 
+- name: cloudflare domain | Display dry-run cache rules
+  ansible.builtin.debug:
+    msg:
+      - "📦 DRY-RUN: Would CREATE/UPDATE {{ cloudflare_domain_cache.cache_rules | length }} cache rule(s):"
+      - "{% for rule in cloudflare_domain_cache.cache_rules %}  - {{ rule.description }}: {{ rule.expression }}{% endfor %}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_cache.cache_rules is defined
+    - cloudflare_domain_cache.cache_rules | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_cache
+
+- name: cloudflare domain | Display dry-run origin settings
+  ansible.builtin.debug:
+    msg:
+      - "🌐 DRY-RUN: Would CONFIGURE origin server settings:"
+      - "  True Client IP Header: {{ 'ON' if cloudflare_domain_origin.true_client_ip_header else 'OFF' }}"
+      - "  Always Online: {{ 'ON' if cloudflare_domain_origin.always_online else 'OFF' }}"
+      - "  Origin Error Page Pass Thru: {{ 'ON' if cloudflare_domain_origin.origin_error_page_pass_thru else 'OFF' }}"
+      - "  Sort Query String: {{ 'ON' if cloudflare_domain_origin.sort_query_string_for_cache else 'OFF' }}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_origin is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_origin
+
 - name: cloudflare domain | configure origin server settings
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/settings/{{ item.key }}"
@@ -201,6 +248,20 @@
     - cloudflare_domain
     - cloudflare_origin
 
+- name: cloudflare domain | Display dry-run DNSSEC configuration
+  ansible.builtin.debug:
+    msg:
+      - "🔐 DRY-RUN: Would {{ 'ENABLE' if cloudflare_domain_dnssec.enabled else 'DISABLE' }} DNSSEC"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_dnssec is defined
+    - cloudflare_domain_dnssec.enabled is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_dnssec
+
 - name: cloudflare domain | configure DNSSEC
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/dnssec"
@@ -225,6 +286,20 @@
     - cloudflare_configuration
     - cloudflare_domain
     - cloudflare_dnssec
+
+- name: cloudflare domain | Display dry-run Onion Routing configuration
+  ansible.builtin.debug:
+    msg:
+      - "🧅 DRY-RUN: Would {{ 'ENABLE' if cloudflare_domain_onion_routing.enabled else 'DISABLE' }} Onion Routing (Tor support)"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is defined
+    - cloudflare_domain_onion_routing is defined
+    - cloudflare_domain_onion_routing.enabled is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_onion
 
 - name: cloudflare domain | enable Onion Routing (Tor support)
   ansible.builtin.uri:
@@ -312,6 +387,20 @@
 - name: cloudflare domain | merge global and platform page rules
   ansible.builtin.set_fact:
     _all_page_rules: "{{ (cloudflare_page_rules | default([])) + (cloudflare_platform_page_rules | default([])) }}"
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_page_rules
+
+- name: cloudflare domain | Display dry-run page rules creation
+  ansible.builtin.debug:
+    msg:
+      - "📄 DRY-RUN: Would CREATE/UPDATE {{ _all_page_rules | length }} page rule(s):"
+      - "{% for rule in _all_page_rules %}  - Priority {{ rule.priority }}: {{ rule.targets[0].constraint.value }}{% endfor %}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - _all_page_rules is defined
+    - _all_page_rules | length > 0
   tags:
     - cloudflare_configuration
     - cloudflare_domain

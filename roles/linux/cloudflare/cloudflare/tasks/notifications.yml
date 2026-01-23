@@ -10,12 +10,9 @@
 - name: cloudflare notifications | Display dry-run email destination creation
   ansible.builtin.debug:
     msg:
-      - " DRY-RUN: Would CREATE email destination:"
-      - "  Name: {{ item.name }}"
-      - "  Email: {{ item.email }}"
-  loop: "{{ cloudflare_notification_email_destinations | default([]) }}"
-  loop_control:
-    label: "{{ item.name }}"
+      - "📧 DRY-RUN: Would CREATE {{ cloudflare_notification_email_destinations | length }} email destination(s):"
+      - "{% for dest in cloudflare_notification_email_destinations %}  - {{ dest.name }}: {{ dest.email }}{% endfor %}"
+  loop: []
   when:
     - cloudflare_dry_run | default(false) | bool
     - cloudflare_account_id is defined
@@ -24,6 +21,22 @@
     - cloudflare_configuration
     - cloudflare_notifications
     - cloudflare_email_destinations
+
+- name: cloudflare notifications | Display dry-run webhook destination creation
+  ansible.builtin.debug:
+    msg:
+      - "🔗 DRY-RUN: Would CREATE {{ cloudflare_notification_webhook_destinations | length }} webhook destination(s):"
+      - "{% for dest in cloudflare_notification_webhook_destinations %}  - {{ dest.name }}: {{ dest.url }}{% endfor %}"
+  loop: []
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_account_id is defined
+    - cloudflare_notification_webhook_destinations is defined
+    - cloudflare_notification_webhook_destinations | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_notifications
+    - cloudflare_webhook_destinations
 
 - name: cloudflare notifications | Create email destinations
   ansible.builtin.uri:
@@ -75,6 +88,7 @@
     label: "{{ item.name }}"
   register: _webhook_destinations_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_account_id is defined
     - cloudflare_notification_webhook_destinations | length > 0
   changed_when: _webhook_destinations_result.status == 200
