@@ -171,11 +171,28 @@
     return_content: true
   register: _cache_rules_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_domain_cache.cache_rules is defined
     - cloudflare_domain_cache.cache_rules | length > 0
   failed_when: false
   changed_when: _cache_rules_result.status in [200, 201]
+  tags:
+    - cloudflare_configuration
+    - cloudflare_domain
+    - cloudflare_cache
+
+- name: cloudflare domain | Display cache rules result
+  ansible.builtin.debug:
+    msg:
+      - "Cache Rules API Response:"
+      - "  Status: {{ _cache_rules_result.status | default('N/A') }}"
+      - "  Success: {{ _cache_rules_result.json.success | default('N/A') }}"
+      - "  Errors: {{ _cache_rules_result.json.errors | default([]) }}"
+  when:
+    - not (cloudflare_dry_run | default(false) | bool)
+    - _cache_rules_result is defined
+    - _cache_rules_result.json is defined
   tags:
     - cloudflare_configuration
     - cloudflare_domain
