@@ -1,7 +1,35 @@
 ---
+- name: cloudflare network | Get zone ID for network operations
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones?name={{ effective_zone_name }}"
+    method: GET
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    return_content: yes
+    status_code: 200
+  register: _zone_lookup
+  when: cloudflare_scope | default('all') in ['all', 'network']
+  tags:
+    - cloudflare_configuration
+    - cloudflare_network
+
+- name: cloudflare network | Set zone ID fact
+  ansible.builtin.set_fact:
+    cloudflare_zone_id: "{{ _zone_lookup.json.result[0].id }}"
+  when: 
+    - cloudflare_scope | default('all') in ['all', 'network']
+    - _zone_lookup is defined
+    - _zone_lookup.json is defined
+    - _zone_lookup.json.result | length > 0
+  tags:
+    - cloudflare_configuration
+    - cloudflare_network
+
 - name: cloudflare network | display configuration banner
   ansible.builtin.debug:
-    msg: "Configuring network settings for {{ cloudflare_zone_name }}..."
+    msg: "Configuring network settings for {{ effective_zone_name }}..."
   tags:
     - cloudflare_configuration
     - cloudflare_network
@@ -24,7 +52,7 @@
 - name: cloudflare network | Display dry-run IP Geolocation setting
   ansible.builtin.debug:
     msg:
-      - "🌍 DRY-RUN: Would {{ 'ENABLE' if cloudflare_network_ip_geolocation.enabled else 'DISABLE' }} IP Geolocation"
+      - "DRY-RUN: Would {{ 'ENABLE' if cloudflare_network_ip_geolocation.enabled else 'DISABLE' }} IP Geolocation"
   when:
     - cloudflare_dry_run | default(false) | bool
     - cloudflare_zone_id is defined
