@@ -4,7 +4,7 @@ platform_type: "staging"
 platform_domain: "route-game-flex.eu"
 
 ipAddresses:
-  gameflex: "10.2.9.10"
-  backoffice: "10.2.9.11"
-  webapi: "10.2.9.12"
-  gamemanager: "10.2.9.13"
+  gameflex: "81.88.167.90"
+  backoffice: "81.88.167.90"
+  webapi: "81.88.167.90"
+  gamemanager: "81.88.167.90"
