@@ -2,7 +2,7 @@
 cloudflare_network_settings:
   ipv6: true
   websockets: true
-  pseudo_ipv4: "add_header"
+  pseudo_ipv4: off
   ip_geolocation: true
   
   # HTTP/3 and QUIC
