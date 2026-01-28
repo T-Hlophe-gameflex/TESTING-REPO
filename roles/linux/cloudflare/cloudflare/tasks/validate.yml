@@ -32,10 +32,9 @@
       - cloudflare_api_email is defined and cloudflare_api_email != ""
       - cloudflare_api_key is defined and cloudflare_api_key != ""
       - cloudflare_account_id is defined and cloudflare_account_id != ""
-      - effective_zone_name is defined
       - ticket_number is defined and ticket_number != ""
-    fail_msg: "Missing required variables: cloudflare_api_email, cloudflare_api_key, cloudflare_account_id, zone name, or ticket_number"
-    success_msg: "✓ All required variables validated"
+    fail_msg: "Missing required variables: cloudflare_api_email, cloudflare_api_key, cloudflare_account_id, or ticket_number"
+    success_msg: "✓ Required API credentials validated"
   tags: cloudflare_configuration
 
 - name: cloudflare | Load domain-level configuration
@@ -129,6 +128,15 @@
 - name: cloudflare | Set effective zone name
   ansible.builtin.set_fact:
     effective_zone_name: "{{ platform_domain | default(cloudflare_zone_name_override) | default(cloudflare_zone_name) }}"
+  tags: cloudflare_configuration
+
+- name: cloudflare | Validate zone name is configured
+  ansible.builtin.assert:
+    that:
+      - effective_zone_name is defined
+      - effective_zone_name != "not_configured"
+    fail_msg: "Zone name not configured. Platform domain: {{ platform_domain | default('N/A') }}, Effective zone: {{ effective_zone_name | default('N/A') }}"
+    success_msg: "✓ Zone name validated: {{ effective_zone_name }}"
   tags: cloudflare_configuration
 
 - name: cloudflare | Verify platform configuration loaded
