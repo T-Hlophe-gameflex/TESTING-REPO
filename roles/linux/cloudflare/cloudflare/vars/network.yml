@@ -20,3 +20,33 @@ cloudflare_network_settings:
   proxy:
     orange_to_orange: false
     opportunistic_onion: false
+
+# IP Geolocation configuration
+cloudflare_network_ip_geolocation:
+  enabled: true
+
+# Health checks configuration
+cloudflare_network_health_checks:
+  - name: "api-health-check"
+    address: "api.route-game-flex.eu"
+    type: "https"
+    path: "/health"
+    port: 443
+    interval: 60
+    retries: 2
+    timeout: 5
+    expected_codes: "200"
+    check_regions: ["WEU", "ENAM"]
+    description: "API service health monitoring"
+  
+  - name: "webapi-health-check"
+    address: "webapi.route-game-flex.eu"
+    type: "https"
+    path: "/health"
+    port: 443
+    interval: 60
+    retries: 2
+    timeout: 5
+    expected_codes: "200"
+    check_regions: ["WEU", "ENAM"]
+    description: "Web API service health monitoring"

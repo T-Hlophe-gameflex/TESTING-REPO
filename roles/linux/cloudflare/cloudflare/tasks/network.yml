@@ -24,7 +24,7 @@
 - name: cloudflare network | Display dry-run IP Geolocation setting
   ansible.builtin.debug:
     msg:
-      - " DRY-RUN: Would {{ 'ENABLE' if cloudflare_network_ip_geolocation.enabled else 'DISABLE' }} IP Geolocation"
+      - "🌍 DRY-RUN: Would {{ 'ENABLE' if cloudflare_network_ip_geolocation.enabled else 'DISABLE' }} IP Geolocation"
   when:
     - cloudflare_dry_run | default(false) | bool
     - cloudflare_zone_id is defined
@@ -34,6 +34,22 @@
     - cloudflare_configuration
     - cloudflare_network
     - cloudflare_ip_geolocation
+
+- name: cloudflare network | Display dry-run network settings
+  ansible.builtin.debug:
+    msg:
+      - "⚙️  DRY-RUN: Would CONFIGURE network settings:"
+      - "  IPv6: {{ 'ON' if cloudflare_network_settings.ipv6 else 'OFF' }}"
+      - "  WebSockets: {{ 'ON' if cloudflare_network_settings.websockets else 'OFF' }}"
+      - "  Pseudo IPv4: {{ cloudflare_network_settings.pseudo_ipv4 | upper }}"
+      - "  IP Geolocation: {{ 'ON' if cloudflare_network_settings.ip_geolocation else 'OFF' }}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is defined
+    - cloudflare_network_settings is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_network
 
 - name: cloudflare network | create health checks
   ansible.builtin.uri:
@@ -91,6 +107,7 @@
     return_content: true
   register: _ip_geolocation_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_network_ip_geolocation is defined
     - cloudflare_network_ip_geolocation.enabled is defined
@@ -102,6 +119,87 @@
     - cloudflare_configuration
     - cloudflare_network
     - cloudflare_ip_geolocation
+
+- name: cloudflare network | configure IPv6 setting
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/settings/ipv6"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      value: "{{ 'on' if cloudflare_network_settings.ipv6 else 'off' }}"
+    status_code: [200, 400]
+    return_content: true
+  register: _ipv6_result
+  when:
+    - not (cloudflare_dry_run | default(false) | bool)
+    - cloudflare_zone_id is defined
+    - cloudflare_network_settings is defined
+    - cloudflare_network_settings.ipv6 is defined
+  changed_when: 
+    - _ipv6_result.status == 200
+    - _ipv6_result.json.success | default(false)
+  failed_when: false
+  tags:
+    - cloudflare_configuration
+    - cloudflare_network
+
+- name: cloudflare network | configure WebSockets setting
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/settings/websockets"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      value: "{{ 'on' if cloudflare_network_settings.websockets else 'off' }}"
+    status_code: [200, 400]
+    return_content: true
+  register: _websockets_result
+  when:
+    - not (cloudflare_dry_run | default(false) | bool)
+    - cloudflare_zone_id is defined
+    - cloudflare_network_settings is defined
+    - cloudflare_network_settings.websockets is defined
+  changed_when: 
+    - _websockets_result.status == 200
+    - _websockets_result.json.success | default(false)
+  failed_when: false
+  tags:
+    - cloudflare_configuration
+    - cloudflare_network
+
+- name: cloudflare network | configure Pseudo IPv4 setting
+  ansible.builtin.uri:
+    url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/settings/pseudo_ipv4"
+    method: PATCH
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      value: "{{ cloudflare_network_settings.pseudo_ipv4 }}"
+    status_code: [200, 400]
+    return_content: true
+  register: _pseudo_ipv4_result
+  when:
+    - not (cloudflare_dry_run | default(false) | bool)
+    - cloudflare_zone_id is defined
+    - cloudflare_network_settings is defined
+    - cloudflare_network_settings.pseudo_ipv4 is defined
+  changed_when: 
+    - _pseudo_ipv4_result.status == 200
+    - _pseudo_ipv4_result.json.success | default(false)
+  failed_when: false
+  tags:
+    - cloudflare_configuration
+    - cloudflare_network
 
 - name: cloudflare network | display IP Geolocation status
   ansible.builtin.debug:
@@ -125,7 +223,10 @@
     msg:
       - "Network configuration applied"
       - "Health Checks: {{ cloudflare_network_health_checks | default([]) | length }}"
-      - "IP Geolocation: {{ 'Enabled' if (cloudflare_network_ip_geolocation.enabled | default(false)) else 'Disabled' }}"
+      - "IPv6: {{ 'Enabled' if (cloudflare_network_settings.ipv6 | default(false)) else 'Disabled' }}"
+      - "WebSockets: {{ 'Enabled' if (cloudflare_network_settings.websockets | default(false)) else 'Disabled' }}"
+      - "Pseudo IPv4: {{ cloudflare_network_settings.pseudo_ipv4 | default('off') | upper }}"
+      - "IP Geolocation: {{ 'Enabled' if (cloudflare_network_settings.ip_geolocation | default(false)) else 'Disabled' }}"
   tags:
     - cloudflare_configuration
     - cloudflare_network
