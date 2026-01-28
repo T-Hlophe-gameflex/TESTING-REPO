@@ -25,28 +25,14 @@ cloudflare_network_settings:
 cloudflare_network_ip_geolocation:
   enabled: true
 
-# Health checks configuration
-cloudflare_network_health_checks:
-  - name: "gamemanager-health-check"
-    address: "gamemanager-s009.route-game-flex.eu"
-    type: "https"
-    path: "/health"
-    port: 443
-    interval: 60
-    retries: 2
-    timeout: 5
-    expected_codes: "200"
-    check_regions: ["WEU", "ENAM"]
-    description: "Game Manager service health monitoring"
-  
-  - name: "webapi-health-check"
-    address: "webapi-s009.route-game-flex.eu"
-    type: "https"
-    path: "/health"
-    port: 443
-    interval: 60
-    retries: 2
-    timeout: 5
-    expected_codes: "200"
-    check_regions: ["WEU", "ENAM"]
-    description: "Web API service health monitoring"
+# Health checks configuration - will be dynamically built from platform DNS records
+cloudflare_network_health_checks_enabled: true
+cloudflare_network_health_checks_defaults:
+  type: "https"
+  path: "/health"
+  port: 443
+  interval: 60
+  retries: 2
+  timeout: 5
+  expected_codes: "200"
+  check_regions: ["WEU", "ENAM"]

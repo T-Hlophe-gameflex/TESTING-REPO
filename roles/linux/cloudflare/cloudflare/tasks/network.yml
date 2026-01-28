@@ -79,6 +79,35 @@
     - cloudflare_configuration
     - cloudflare_network
 
+- name: cloudflare network | Build dynamic health checks from platform DNS records
+  ansible.builtin.set_fact:
+    cloudflare_network_health_checks: "{{ cloudflare_network_health_checks | default([]) + [health_check_item] }}"
+  vars:
+    health_check_item:
+      name: "{{ item.key }}-health-check"
+      address: "{{ item.key }}-{{ platform_id | lower }}.{{ platform_domain }}"
+      description: "{{ item.key | title }} service health monitoring"
+      type: "{{ cloudflare_network_health_checks_defaults.type }}"
+      path: "{{ cloudflare_network_health_checks_defaults.path }}"
+      port: "{{ cloudflare_network_health_checks_defaults.port }}"
+      interval: "{{ cloudflare_network_health_checks_defaults.interval }}"
+      retries: "{{ cloudflare_network_health_checks_defaults.retries }}"
+      timeout: "{{ cloudflare_network_health_checks_defaults.timeout }}"
+      expected_codes: "{{ cloudflare_network_health_checks_defaults.expected_codes }}"
+      check_regions: "{{ cloudflare_network_health_checks_defaults.check_regions }}"
+  loop: "{{ ipAddresses | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}-{{ platform_id | lower }}.{{ platform_domain }}"
+  when:
+    - cloudflare_network_health_checks_enabled | default(false) | bool
+    - ipAddresses is defined
+    - platform_id is defined
+    - platform_domain is defined
+  tags:
+    - cloudflare_configuration
+    - cloudflare_network
+    - cloudflare_health_checks
+
 - name: cloudflare network | create health checks
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/healthchecks"
