@@ -1,5 +1,4 @@
 ---
-
 awx_host: "{{ groups['ansible'][0] }}"
 awx_validate_certs: true
 awx_organization: "{{ awx_organization_override | default('gameflex') }}"
@@ -12,7 +11,7 @@ awx_project_scm_clean: true
 awx_project_scm_delete_on_update: true
 awx_project_scm_update_on_launch: true
 awx_project_scm_update_cache_timeout: 0
-awx_project_credential: ""  # GitHub credential name 
+awx_project_credential: ""  
 awx_inventory_name: "Gameflex-DevOps-Cloudflare"
 awx_credential_type_name: "AWX Cluster Authentication"
 awx_credential_type_description: "Credentials for connecting to remote AWX/Tower clusters"
@@ -21,34 +20,11 @@ awx_create_awx_credential: false
 awx_cluster_credential_name: "AWX-Cluster-Access"
 awx_template_name: "Cloudflare-Deployment"
 awx_playbook_path: "cloudflare.yml"
-
 survey_enabled: true
 ask_credential_on_launch: false  
 cloudflare_credential_name: "Cloudflare-API-Token"
 cloudflare_api_url: "https://api.cloudflare.com/client/v4"
 
-
-
-domains:
-  - name: "efustryton.co.za"
-    description: "EfuStryton - South Africa production and testing"
-  - name: "efutechnologies.co.za"
-    description: "Efu Technologies - South Africa production and testing"
-
-platforms:
-  - id: "G000"
-    platform_type: "global"
-    number: "000"
-    description: "TEST Global Services Platform (route-game-flex.eu)"
-  - id: "S009"
-    platform_type: "staging"
-    number: "009"
-    description: "TEST Staging Platform 9 (route-game-flex.eu)"
-  - id: "T009"
-    platform_type: "test"
-    number: "009"
-    description: "TEST Test Platform 9 (route-game-flex.eu)"
-
-default_zone: "efustryton.co.za"
-default_scope: "DNS"
+# NOTE: Platforms are auto-discovered from filesystem in tasks/main.yml
+# NOTE: Domains are defined in platform-specific YAML files (platform_domain variable)
 

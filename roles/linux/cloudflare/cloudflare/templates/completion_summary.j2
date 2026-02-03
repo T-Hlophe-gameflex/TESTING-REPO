@@ -7,19 +7,19 @@
 - ""
 - "What was configured:"
 {% if cloudflare_scope | default('dns') == 'dns' %}
-- "  ✓ DNS records ({{ cloudflare_dns_records | default([]) | length }} records):"
+- "   DNS records ({{ cloudflare_dns_records | default([]) | length }} records):"
 {% for record in cloudflare_dns_records | default([]) %}
 - "    - {{ record.name }}.{{ platform_domain | default(effective_zone_name) | default(cloudflare_zone_name) }} → {{ record.content }} ({{ record.type }})"
 {% endfor %}
 {% endif %}
 {% if cloudflare_scope | default('dns') == 'domain' %}
-- "  ✓ Domain settings (SSL, cache, Argo, DNSSEC)"
+- "   Domain settings (SSL, cache, Argo, DNSSEC)"
 {% endif %}
 {% if cloudflare_scope | default('dns') == 'network' %}
-- "  ✓ Network settings (health checks, IP geolocation)"
+- "   Network settings (health checks, IP geolocation)"
 {% endif %}
 {% if cloudflare_scope | default('dns') == 'notifications' %}
-- "  ✓ Notification settings (email and webhook alerts)"
+- "   Notification settings (email and webhook alerts)"
 {% endif %}
 - ""
 - "Verify your changes:"

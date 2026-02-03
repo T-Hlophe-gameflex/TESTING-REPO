@@ -38,15 +38,9 @@
   ansible.builtin.set_fact:
     platforms: "{{ platforms_sorted | from_yaml }}"
 
-- name: Build domains list from cloudflare_domains
-  ansible.builtin.set_fact:
-    domains: "{{ cloudflare_domains }}"
-  when: cloudflare_domains is defined
-
 - name: Validate required variables
   ansible.builtin.assert:
     that:
-      - domains is defined and domains | length > 0
       - platforms is defined and platforms | length > 0
       - awx_project_name is defined
       - awx_inventory_name is defined
@@ -61,7 +55,6 @@
   ansible.builtin.debug:
     msg:
       - "Discovered {{ platforms | length }} platforms: {{ platforms | join(', ') }}"
-      - "Configured {{ domains | length }} domains: {{ domains | map(attribute='name') | join(', ') }}"
 
 - name: Check if project exists
   ansible.builtin.uri:
