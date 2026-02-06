@@ -117,7 +117,9 @@
       X-Auth-Key: "{{ cloudflare_api_key }}"
       Content-Type: "application/json"
     body_format: json
-    body:
+    body: "{{ health_check_body | to_json }}"
+  vars:
+    health_check_body:
       name: "{{ item.name }}"
       description: "{{ item.description | default('Health check for ' + item.name) }}"
       check_regions: "{{ item.check_regions | default(['WEU', 'ENAM']) }}"
