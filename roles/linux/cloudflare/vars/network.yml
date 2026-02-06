@@ -24,7 +24,7 @@ cloudflare_network_ip_geolocation:
 cloudflare_network_health_checks_enabled: true
 cloudflare_network_health_checks_defaults:
   type: "https"
-  path: "/gamelaunch/api/v2.0/heartbeat/{{ platform_id }}/IFO/20/gameProviders"
+  path: "/health"
   port: 443
   interval: 60
   retries: 2

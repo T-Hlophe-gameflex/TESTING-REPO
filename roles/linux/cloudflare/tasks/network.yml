@@ -122,20 +122,17 @@
         "name": "{{ item.name }}",
         "description": "{{ item.description | default('Health check for ' + item.name) }}",
         "check_regions": {{ item.check_regions | default(['WEU', 'ENAM']) | to_json }},
-        "type": "{{ item.type | default('https') | upper }}",
+        "type": "{{ item.type | default('https') }}",
         "address": "{{ item.address }}",
+        "port": {{ item.port | default(443) }},
+        "path": "{{ item.path | default('/') }}",
         "interval": {{ item.interval | default(60) }},
         "retries": {{ item.retries | default(2) }},
         "timeout": {{ item.timeout | default(5) }},
-        "http_config": {
-          "method": "GET",
-          "port": {{ item.port | default(443) }},
-          "path": "{{ item.path | default('/') }}",
-          "expected_codes": "{{ item.expected_codes | default('200') }}",
-          "expected_body": "{{ item.expected_body | default('') }}",
-          "follow_redirects": {{ item.follow_redirects | default(false) | lower }},
-          "allow_insecure": {{ item.allow_insecure | default(false) | lower }}
-        }
+        "expected_codes": "{{ item.expected_codes | default('200') }}",
+        "expected_body": "{{ item.expected_body | default('') }}",
+        "follow_redirects": {{ item.follow_redirects | default(false) | lower }},
+        "allow_insecure": {{ item.allow_insecure | default(false) | lower }}
       }
     status_code: [200, 409]
     return_content: true

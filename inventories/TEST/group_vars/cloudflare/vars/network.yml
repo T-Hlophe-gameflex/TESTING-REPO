@@ -8,7 +8,7 @@ cloudflare_network_health_checks:
     type: "https"
     address: "gameflex-{{ platform_id | lower }}.{{ platform_domain | default(cloudflare_zone_name) }}"
     port: 443
-    path: "/gamelaunch/api/v2.0/heartbeat/{{ platform_id }}/IFO/20/gameProviders"
+    path: "/health"
     interval: 60
     retries: 2
     timeout: 10
@@ -24,7 +24,7 @@ cloudflare_network_health_checks:
     type: "https"
     address: "api-{{ platform_id | lower }}.{{ platform_domain | default(cloudflare_zone_name) }}"
     port: 443
-    path: "/gamelaunch/api/v2.0/heartbeat/{{ platform_id }}/IFO/20/gameProviders"
+    path: "/api/v1/health"
     interval: 120
     retries: 3
     timeout: 10
