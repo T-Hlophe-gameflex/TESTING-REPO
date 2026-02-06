@@ -131,7 +131,7 @@
           "method": "GET",
           "port": {{ item.port | default(443) }},
           "path": "{{ item.path | default('/') }}",
-          "expected_codes": "{{ item.expected_codes | default('200') }}",
+          "expected_codes": {{ item.expected_codes | default('200') | split(',') | to_json }},
           "expected_body": "{{ item.expected_body | default('') }}",
           "follow_redirects": {{ item.follow_redirects | default(false) | lower }},
           "allow_insecure": {{ item.allow_insecure | default(false) | lower }}
