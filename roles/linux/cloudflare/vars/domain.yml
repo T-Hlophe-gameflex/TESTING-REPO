@@ -1,6 +1,12 @@
 ---
 cloudflare_domain_ssl:
   universal_ssl_enabled: true
+  # Custom certificates - populate this array to upload certificates
+  # Example: custom_certificates:
+  #   - certificate: "{{ lookup('file', 'certs/mycert.pem') }}"
+  #     private_key: "{{ lookup('file', 'certs/mykey.pem') }}"
+  #     bundle: "{{ lookup('file', 'certs/bundle.pem') | default('') }}"
+  #     bundle_method: "ubiquitous"  # ubiquitous, optimal, or force
   custom_certificates: []
   ssl_mode: "{{ ssl_mode | default('full_strict') }}"
   min_tls_version: "1.2"

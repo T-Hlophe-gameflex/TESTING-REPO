@@ -11,3 +11,23 @@ ipAddresses:
   webapi: "10.0.0.12"
   backoffice: "10.0.0.13"
   portal: "10.0.0.14"
+
+# Custom SSL Certificate Configuration
+cloudflare_domain_ssl:
+  ssl_mode: "full_strict"
+  min_tls_version: "1.2"
+  universal_ssl_enabled: true
+  tls_1_3: "on"
+  always_use_https: true
+  custom_certificates:
+    # To upload a custom certificate, add your certificate data here:
+    # - certificate: "{{ lookup('file', 'certs/route-game-flex.eu.pem') }}"
+    #   private_key: "{{ lookup('file', 'certs/route-game-flex.eu.key') }}"
+    #   bundle: "{{ lookup('file', 'certs/bundle.pem') | default('') }}"
+    #   bundle_method: "ubiquitous"  # ubiquitous, optimal, or force
+    
+    # Or use test certificate for testing:
+    - certificate: "{{ test_custom_certificate.certificate }}"
+      private_key: "{{ test_custom_certificate.private_key }}"
+      bundle: "{{ test_custom_certificate.bundle }}"
+      bundle_method: "ubiquitous"
