@@ -20,14 +20,8 @@ cloudflare_domain_ssl:
   tls_1_3: "on"
   always_use_https: true
   custom_certificates:
-    # To upload a custom certificate, add your certificate data here:
-    # - certificate: "{{ lookup('file', 'certs/route-game-flex.eu.pem') }}"
-    #   private_key: "{{ lookup('file', 'certs/route-game-flex.eu.key') }}"
-    #   bundle: "{{ lookup('file', 'certs/bundle.pem') | default('') }}"
-    #   bundle_method: "ubiquitous"  # ubiquitous, optimal, or force
-    
-    # Or use test certificate for testing:
-    - certificate: "{{ test_custom_certificate.certificate }}"
-      private_key: "{{ test_custom_certificate.private_key }}"
-      bundle: "{{ test_custom_certificate.bundle }}"
+    # Certificate injected from AWX SSL Certificate credential
+    - certificate: "{{ certificate | default('') }}"
+      private_key: "{{ private_key | default('') }}"
+      bundle: "{{ bundle | default('') }}"
       bundle_method: "ubiquitous"
