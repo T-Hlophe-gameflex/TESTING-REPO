@@ -1,0 +1,69 @@
+---
+# Test Custom SSL Certificate Configuration
+# This file demonstrates how to configure a custom SSL certificate
+
+# NOTE: This is a TEST certificate (self-signed) for demonstration only
+# For production, use real certificates from a trusted CA
+
+# SSL Configuration (required to enable certificate upload)
+cloudflare_domain_ssl:
+  ssl_mode: "full_strict"
+  min_tls_version: "1.2"
+  universal_ssl_enabled: true
+  custom_certificates:
+    - certificate: "{{ test_custom_certificate.certificate }}"
+      private_key: "{{ test_custom_certificate.private_key }}"
+      bundle: "{{ test_custom_certificate.bundle }}"
+      bundle_method: "ubiquitous"
+
+test_custom_certificate:
+  # Certificate in PEM format (public certificate)
+  certificate: |
+    -----BEGIN CERTIFICATE-----
+    MIIDXTCCAkWgAwIBAgIJAKJ5JqJ5JqJ5MA0GCSqGSIb3DQEBCwUAMEUxCzAJBgNV
+    BAYTAkFVMRMwEQYDVQQIDApTb21lLVN0YXRlMSEwHwYDVQQKDBhJbnRlcm5ldCBX
+    aWRnaXRzIFB0eSBMdGQwHhcNMjYwMjA2MDAwMDAwWhcNMjcwMjA2MDAwMDAwWjBF
+    MQswCQYDVQQGEwJBVTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50
+    ZXJuZXQgV2lkZ2l0cyBQdHkgTHRkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIB
+    CgKCAQEAtest1234567890test1234567890test1234567890test1234567890test
+    1234567890test1234567890test1234567890test1234567890test1234567890te
+    st1234567890test1234567890test1234567890test1234567890test123456789
+    0test1234567890test1234567890test1234567890test1234567890test123456
+    7890test1234567890test1234567890test1234567890test1234567890QIDAQABo
+    1AwTjAdBgNVHQ4EFgQUtest1234567890test1234567890MB8GA1UdIwQYMBaAFK
+    J5test1234567890test1234567890MAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEL
+    BQADggEBAtest1234567890test1234567890test1234567890test1234567890
+    -----END CERTIFICATE-----
+  
+  # Private key in PEM format (NEVER commit real private keys!)
+  private_key: |
+    -----BEGIN PRIVATE KEY-----
+    MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDtest1234567890
+    test1234567890test1234567890test1234567890test1234567890test1234567
+    890test1234567890test1234567890test1234567890test1234567890test1234
+    567890test1234567890test1234567890test1234567890test1234567890test1
+    234567890test1234567890test1234567890test1234567890test1234567890Ag
+    MBAAECggEAtest1234567890test1234567890test1234567890test1234567890
+    test1234567890test1234567890test1234567890test1234567890test1234567
+    890test1234567890test1234567890test1234567890test1234567890QJBAtest
+    1234567890test1234567890test1234567890test1234567890test1234567890
+    -----END PRIVATE KEY-----
+  
+  # Optional: Certificate bundle (intermediate certificates)
+  bundle: ""
+  
+  # Geo restrictions (optional)
+  geo_restrictions:
+    label: "Test Certificate"
+
+# To use a real custom certificate, replace the above with:
+# 1. Your actual certificate from a CA (Let's Encrypt, DigiCert, etc.)
+# 2. Your private key (keep this secure!)
+# 3. Intermediate certificates if required
+
+# Add this to your platform configuration file to test:
+# cloudflare_domain_ssl:
+#   custom_certificates:
+#     - certificate: "{{ test_custom_certificate.certificate }}"
+#       private_key: "{{ test_custom_certificate.private_key }}"
+#       bundle: "{{ test_custom_certificate.bundle }}"
