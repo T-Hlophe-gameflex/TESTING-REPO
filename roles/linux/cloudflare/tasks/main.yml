@@ -51,9 +51,10 @@
 
 - import_tasks: ssl_certs.yml
   run_once: true
-  when: cloudflare_scope | default('all') in ['all', 'ssl', 'certificates']
+  when: cloudflare_scope | default('all') in ['all', 'domain', 'ssl', 'certificates']
   tags:
     - cloudflare_configuration
+    - cloudflare_domain
     - cloudflare_ssl
     - cloudflare_certificates
 
