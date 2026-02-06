@@ -3,7 +3,7 @@
 
 - name: cloudflare | ssl_certs | Get Zone ID
   ansible.builtin.uri:
-    url: "https://api.cloudflare.com/client/v4/zones?name={{ cloudflare_domain }}"
+    url: "https://api.cloudflare.com/client/v4/zones?name={{ platform_domain | default(effective_zone_name) }}"
     method: GET
     headers:
       Authorization: "{{ 'Bearer ' + cloudflare_api_token if cloudflare_api_token is defined and cloudflare_api_token else omit }}"
@@ -44,7 +44,7 @@
       - "======================================================================"
       - " CUSTOM SSL CERTIFICATES - DRY RUN MODE"
       - "======================================================================"
-      - "Would check for existing certificates on domain: {{ cloudflare_domain }}"
+      - "Would check for existing certificates on domain: {{ platform_domain | default(effective_zone_name) | default('N/A') }}"
       - "Custom certificates to upload: {{ cloudflare_domain_ssl.custom_certificates | default([]) | length }}"
       - "{% if cloudflare_domain_ssl.custom_certificates | default([]) | length > 0 %}Certificates preview:{% for cert in cloudflare_domain_ssl.custom_certificates %}  - Certificate {{ loop.index }}: {% if cert.certificate is defined %}Present ({{ cert.certificate | length }} chars){% else %}Missing{% endif %}  - Private Key: {% if cert.private_key is defined %}Present ({{ cert.private_key | length }} chars){% else %}Missing{% endif %}  - Bundle: {% if cert.bundle is defined and cert.bundle %}Present{% else %}None{% endif %}{% endfor %}{% else %}  No custom certificates configured.{% endif %}"
       - "======================================================================"
@@ -58,7 +58,7 @@
       - "======================================================================"
       - " EXISTING CUSTOM SSL CERTIFICATES"
       - "======================================================================"
-      - "Zone: {{ cloudflare_domain }} ({{ cloudflare_zone_id }})"
+      - "Zone: {{ platform_domain | default(effective_zone_name) }} ({{ cloudflare_zone_id }})"
       - "Total certificates: {{ existing_certs.json.result | length }}"
       - "{% for cert in existing_certs.json.result %}Certificate {{ loop.index }}:  ID: {{ cert.id }}  Status: {{ cert.status }}  Hosts: {{ cert.hosts | join(', ') }}  Issuer: {{ cert.issuer }}  Expires: {{ cert.expires_on }}  Uploaded: {{ cert.uploaded_on }}{% endfor %}"
       - "======================================================================"
@@ -156,8 +156,8 @@
       - "======================================================================"
       - " SSL CERTIFICATE CONFIGURATION SUMMARY"
       - "======================================================================"
-      - "Domain: {{ cloudflare_domain }}"
-      - "{% if not cloudflare_dry_run | bool %}Zone ID: {{ cloudflare_zone_id }}{% endif %}"
+      - "Domain: {{ platform_domain | default(effective_zone_name) | default('N/A') }}"
+      - "{% if not cloudflare_dry_run | bool and cloudflare_zone_id is defined %}Zone ID: {{ cloudflare_zone_id }}{% endif %}"
       - "SSL Mode: {{ cloudflare_domain_ssl.ssl_mode | default('full_strict') }}"
       - "Universal SSL: {{ 'Enabled' if cloudflare_domain_ssl.universal_ssl_enabled | default(true) else 'Disabled' }}"
       - "Min TLS Version: {{ cloudflare_domain_ssl.min_tls_version | default('1.2') }}"
