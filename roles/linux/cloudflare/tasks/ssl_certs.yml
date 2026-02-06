@@ -1,0 +1,167 @@
+---
+# Custom SSL Certificate Management for Cloudflare
+
+- name: cloudflare | ssl_certs | Get Zone ID
+  ansible.builtin.uri:
+    url: "https://api.cloudflare.com/client/v4/zones?name={{ cloudflare_domain }}"
+    method: GET
+    headers:
+      Authorization: "{{ 'Bearer ' + cloudflare_api_token if cloudflare_api_token is defined and cloudflare_api_token else omit }}"
+      X-Auth-Email: "{{ cloudflare_api_email if cloudflare_api_email is defined and cloudflare_api_email and not cloudflare_api_token else omit }}"
+      X-Auth-Key: "{{ cloudflare_api_key if cloudflare_api_key is defined and cloudflare_api_key and not cloudflare_api_token else omit }}"
+      Content-Type: "application/json"
+    return_content: true
+  register: zone_info
+  when: not cloudflare_dry_run | bool
+  check_mode: false
+  changed_when: false
+
+- name: cloudflare | ssl_certs | Set Zone ID fact
+  ansible.builtin.set_fact:
+    cloudflare_zone_id: "{{ zone_info.json.result[0].id }}"
+  when: 
+    - not cloudflare_dry_run | bool
+    - zone_info.json.result | length > 0
+
+- name: cloudflare | ssl_certs | List existing custom certificates
+  ansible.builtin.uri:
+    url: "https://api.cloudflare.com/client/v4/zones/{{ cloudflare_zone_id }}/custom_certificates"
+    method: GET
+    headers:
+      Authorization: "{{ 'Bearer ' + cloudflare_api_token if cloudflare_api_token is defined and cloudflare_api_token else omit }}"
+      X-Auth-Email: "{{ cloudflare_api_email if cloudflare_api_email is defined and cloudflare_api_email and not cloudflare_api_token else omit }}"
+      X-Auth-Key: "{{ cloudflare_api_key if cloudflare_api_key is defined and cloudflare_api_key and not cloudflare_api_token else omit }}"
+      Content-Type: "application/json"
+    return_content: true
+  register: existing_certs
+  when: not cloudflare_dry_run | bool
+  check_mode: false
+  changed_when: false
+
+- name: cloudflare | ssl_certs | Display existing certificates (DRY-RUN)
+  ansible.builtin.debug:
+    msg: 
+      - "======================================================================"
+      - " CUSTOM SSL CERTIFICATES - DRY RUN MODE"
+      - "======================================================================"
+      - "Would check for existing certificates on domain: {{ cloudflare_domain }}"
+      - "Custom certificates to upload: {{ cloudflare_domain_ssl.custom_certificates | default([]) | length }}"
+      - "{% if cloudflare_domain_ssl.custom_certificates | default([]) | length > 0 %}Certificates preview:{% for cert in cloudflare_domain_ssl.custom_certificates %}  - Certificate {{ loop.index }}: {% if cert.certificate is defined %}Present ({{ cert.certificate | length }} chars){% else %}Missing{% endif %}  - Private Key: {% if cert.private_key is defined %}Present ({{ cert.private_key | length }} chars){% else %}Missing{% endif %}  - Bundle: {% if cert.bundle is defined and cert.bundle %}Present{% else %}None{% endif %}{% endfor %}{% else %}  No custom certificates configured.{% endif %}"
+      - "======================================================================"
+  when: 
+    - cloudflare_dry_run | bool
+    - cloudflare_domain_ssl.custom_certificates is defined
+
+- name: cloudflare | ssl_certs | Display existing certificates (DEPLOYMENT)
+  ansible.builtin.debug:
+    msg:
+      - "======================================================================"
+      - " EXISTING CUSTOM SSL CERTIFICATES"
+      - "======================================================================"
+      - "Zone: {{ cloudflare_domain }} ({{ cloudflare_zone_id }})"
+      - "Total certificates: {{ existing_certs.json.result | length }}"
+      - "{% for cert in existing_certs.json.result %}Certificate {{ loop.index }}:  ID: {{ cert.id }}  Status: {{ cert.status }}  Hosts: {{ cert.hosts | join(', ') }}  Issuer: {{ cert.issuer }}  Expires: {{ cert.expires_on }}  Uploaded: {{ cert.uploaded_on }}{% endfor %}"
+      - "======================================================================"
+  when: 
+    - not cloudflare_dry_run | bool
+    - existing_certs.json.result is defined
+    - existing_certs.json.result | length > 0
+
+- name: cloudflare | ssl_certs | Upload custom SSL certificates (DRY-RUN)
+  ansible.builtin.debug:
+    msg:
+      - "Would upload certificate {{ item_index + 1 }}:"
+      - "  Certificate: {{ 'Present (' + (item.certificate | string | length | string) + ' bytes)' if item.certificate is defined else 'Missing ❌' }}"
+      - "  Private Key: {{ 'Present (' + (item.private_key | string | length | string) + ' bytes)' if item.private_key is defined else 'Missing ❌' }}"
+      - "  Bundle: {{ 'Present' if item.bundle is defined and item.bundle else 'None' }}"
+      - "  Bundle Method: {{ item.bundle_method | default('ubiquitous') }}"
+      - "  Geo Restrictions: {{ item.geo_restrictions | default('None') }}"
+  loop: "{{ cloudflare_domain_ssl.custom_certificates | default([]) }}"
+  loop_control:
+    index_var: item_index
+  when:
+    - cloudflare_dry_run | bool
+    - cloudflare_domain_ssl.custom_certificates is defined
+    - cloudflare_domain_ssl.custom_certificates | length > 0
+
+- name: cloudflare | ssl_certs | Upload custom SSL certificates (DEPLOYMENT)
+  ansible.builtin.uri:
+    url: "https://api.cloudflare.com/client/v4/zones/{{ cloudflare_zone_id }}/custom_certificates"
+    method: POST
+    headers:
+      Authorization: "{{ 'Bearer ' + cloudflare_api_token if cloudflare_api_token is defined and cloudflare_api_token else omit }}"
+      X-Auth-Email: "{{ cloudflare_api_email if cloudflare_api_email is defined and cloudflare_api_email and not cloudflare_api_token else omit }}"
+      X-Auth-Key: "{{ cloudflare_api_key if cloudflare_api_key is defined and cloudflare_api_key and not cloudflare_api_token else omit }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      certificate: "{{ item.certificate }}"
+      private_key: "{{ item.private_key }}"
+      bundle_method: "{{ item.bundle_method | default('ubiquitous') }}"
+      geo_restrictions: "{{ item.geo_restrictions | default(omit) }}"
+    return_content: true
+    status_code: [200, 201]
+  loop: "{{ cloudflare_domain_ssl.custom_certificates | default([]) }}"
+  register: cert_upload
+  when:
+    - not cloudflare_dry_run | bool
+    - cloudflare_domain_ssl.custom_certificates is defined
+    - cloudflare_domain_ssl.custom_certificates | length > 0
+    - item.certificate is defined
+    - item.private_key is defined
+
+- name: cloudflare | ssl_certs | Display certificate upload results
+  ansible.builtin.debug:
+    msg:
+      - "======================================================================"
+      - " CERTIFICATE UPLOAD RESULTS"
+      - "======================================================================"
+      - "{% for result in cert_upload.results %}Certificate {{ loop.index }}:  Status: {{ 'Success ✓' if result.status == 200 or result.status == 201 else 'Failed ✗' }}  Certificate ID: {{ result.json.result.id | default('N/A') }}  Hosts: {{ result.json.result.hosts | default([]) | join(', ') }}  Status: {{ result.json.result.status | default('N/A') }}{% endfor %}"
+      - "======================================================================"
+  when:
+    - not cloudflare_dry_run | bool
+    - cert_upload is defined
+    - cert_upload.results is defined
+    - cert_upload.results | length > 0
+
+- name: cloudflare | ssl_certs | Set SSL/TLS mode
+  ansible.builtin.uri:
+    url: "https://api.cloudflare.com/client/v4/zones/{{ cloudflare_zone_id }}/settings/ssl"
+    method: PATCH
+    headers:
+      Authorization: "{{ 'Bearer ' + cloudflare_api_token if cloudflare_api_token is defined and cloudflare_api_token else omit }}"
+      X-Auth-Email: "{{ cloudflare_api_email if cloudflare_api_email is defined and cloudflare_api_email and not cloudflare_api_token else omit }}"
+      X-Auth-Key: "{{ cloudflare_api_key if cloudflare_api_key is defined and cloudflare_api_key and not cloudflare_api_token else omit }}"
+      Content-Type: "application/json"
+    body_format: json
+    body:
+      value: "{{ cloudflare_domain_ssl.ssl_mode | default('full_strict') }}"
+    return_content: true
+    status_code: [200]
+  register: ssl_mode_result
+  when:
+    - not cloudflare_dry_run | bool
+    - cloudflare_domain_ssl.ssl_mode is defined
+
+- name: cloudflare | ssl_certs | Display SSL mode update (DRY-RUN)
+  ansible.builtin.debug:
+    msg: "Would set SSL/TLS mode to: {{ cloudflare_domain_ssl.ssl_mode | default('full_strict') }}"
+  when:
+    - cloudflare_dry_run | bool
+    - cloudflare_domain_ssl.ssl_mode is defined
+
+- name: cloudflare | ssl_certs | Summary
+  ansible.builtin.debug:
+    msg:
+      - "======================================================================"
+      - " SSL CERTIFICATE CONFIGURATION SUMMARY"
+      - "======================================================================"
+      - "Domain: {{ cloudflare_domain }}"
+      - "{% if not cloudflare_dry_run | bool %}Zone ID: {{ cloudflare_zone_id }}{% endif %}"
+      - "SSL Mode: {{ cloudflare_domain_ssl.ssl_mode | default('full_strict') }}"
+      - "Universal SSL: {{ 'Enabled' if cloudflare_domain_ssl.universal_ssl_enabled | default(true) else 'Disabled' }}"
+      - "Min TLS Version: {{ cloudflare_domain_ssl.min_tls_version | default('1.2') }}"
+      - "Custom Certificates: {{ cloudflare_domain_ssl.custom_certificates | default([]) | length }}"
+      - "{% if not cloudflare_dry_run | bool and cert_upload is defined and cert_upload.results is defined %}Uploaded: {{ cert_upload.results | selectattr('status', 'in', [200, 201]) | list | length }}{% endif %}"
+      - "Mode: {{ 'DRY-RUN (Preview Only)' if cloudflare_dry_run | bool else 'DEPLOYMENT (Changes Applied)' }}"
+      - "======================================================================"
