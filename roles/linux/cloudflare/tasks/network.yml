@@ -89,10 +89,10 @@
       description: "{{ item.key | title }} service health monitoring"
       type: "{{ cloudflare_network_health_checks_defaults.type }}"
       path: "/gamelaunch/api/v2.0/heartbeat/{{ platform_id }}/IFO/20/gameProviders"
-      port: "{{ cloudflare_network_health_checks_defaults.port | int }}"
-      interval: "{{ cloudflare_network_health_checks_defaults.interval | int }}"
-      retries: "{{ cloudflare_network_health_checks_defaults.retries | int }}"
-      timeout: "{{ cloudflare_network_health_checks_defaults.timeout | int }}"
+      port: "{{ cloudflare_network_health_checks_defaults.port }}"
+      interval: "{{ cloudflare_network_health_checks_defaults.interval }}"
+      retries: "{{ cloudflare_network_health_checks_defaults.retries }}"
+      timeout: "{{ cloudflare_network_health_checks_defaults.timeout }}"
       expected_codes: "{{ cloudflare_network_health_checks_defaults.expected_codes }}"
       check_regions: "{{ cloudflare_network_health_checks_defaults.check_regions }}"
   loop: "{{ ipAddresses | dict2items }}"
@@ -116,26 +116,26 @@
       X-Auth-Email: "{{ cloudflare_api_email }}"
       X-Auth-Key: "{{ cloudflare_api_key }}"
       Content-Type: "application/json"
-    body_format: json
-    body: "{{ health_check_body | to_json }}"
-  vars:
-    health_check_body:
-      name: "{{ item.name }}"
-      description: "{{ item.description | default('Health check for ' + item.name) }}"
-      check_regions: "{{ item.check_regions | default(['WEU', 'ENAM']) }}"
-      type: "{{ item.type | default('HTTPS') | upper }}"
-      address: "{{ item.address }}"
-      interval: "{{ item.interval | default(60) | int }}"
-      retries: "{{ item.retries | default(2) | int }}"
-      timeout: "{{ item.timeout | default(5) | int }}"
-      http_config:
-        method: "GET"
-        port: "{{ item.port | default(443) | int }}"
-        path: "{{ item.path | default('/') }}"
-        expected_codes: "{{ item.expected_codes | default('200') }}"
-        expected_body: "{{ item.expected_body | default('') }}"
-        follow_redirects: "{{ item.follow_redirects | default(false) }}"
-        allow_insecure: "{{ item.allow_insecure | default(false) }}"
+    body: |
+      {
+        "name": "{{ item.name }}",
+        "description": "{{ item.description | default('Health check for ' + item.name) }}",
+        "check_regions": {{ item.check_regions | default(['WEU', 'ENAM']) | to_json }},
+        "type": "{{ item.type | default('HTTPS') | upper }}",
+        "address": "{{ item.address }}",
+        "interval": {{ item.interval | default(60) }},
+        "retries": {{ item.retries | default(2) }},
+        "timeout": {{ item.timeout | default(5) }},
+        "http_config": {
+          "method": "GET",
+          "port": {{ item.port | default(443) }},
+          "path": "{{ item.path | default('/') }}",
+          "expected_codes": "{{ item.expected_codes | default('200') }}",
+          "expected_body": "{{ item.expected_body | default('') }}",
+          "follow_redirects": {{ item.follow_redirects | default(false) | lower }},
+          "allow_insecure": {{ item.allow_insecure | default(false) | lower }}
+        }
+      }
     status_code: [200, 409]
     return_content: true
   loop: "{{ cloudflare_network_health_checks | default([]) }}"
