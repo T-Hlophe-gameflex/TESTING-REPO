@@ -88,7 +88,7 @@
       address: "{{ item.key }}-{{ platform_id | lower }}.{{ platform_domain }}"
       description: "{{ item.key | title }} service health monitoring"
       type: "{{ cloudflare_network_health_checks_defaults.type }}"
-      path: "{{ cloudflare_network_health_checks_defaults.path }}"
+      path: "/gamelaunch/api/v2.0/heartbeat/{{ platform_id }}/IFO/20/gameProviders"
       port: "{{ cloudflare_network_health_checks_defaults.port }}"
       interval: "{{ cloudflare_network_health_checks_defaults.interval }}"
       retries: "{{ cloudflare_network_health_checks_defaults.retries }}"
