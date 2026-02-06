@@ -3,7 +3,7 @@
 
 cloudflare_network_health_checks_enabled: false
 cloudflare_network_health_checks:
-  - name: "{{ platform_id | lower }}-gameflex-health"
+  - name: "gameflex_{{ platform_id | lower }}"
     description: "Health check for {{ platform_id }} GameFlex platform"
     type: "https"
     address: "gameflex-{{ platform_id | lower }}.{{ platform_domain | default(cloudflare_zone_name) }}"
@@ -19,7 +19,7 @@ cloudflare_network_health_checks:
     follow_redirects: true
     allow_insecure: false
   
-  - name: "{{ platform_id | lower }}-api-health"
+  - name: "api_{{ platform_id | lower }}"
     description: "Health check for {{ platform_id }} API service"
     type: "https"
     address: "api-{{ platform_id | lower }}.{{ platform_domain | default(cloudflare_zone_name) }}"
