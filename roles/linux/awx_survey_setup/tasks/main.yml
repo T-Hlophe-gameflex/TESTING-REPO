@@ -210,7 +210,7 @@
         - id: awx_cluster_url
           type: string
           label: "AWX Cluster URL"
-          help_text: "Full URL to AWX/Tower cluster (e.g., https://awx.example.com)"
+          help_text: "Full URL to AWX/Tower cluster"
         - id: awx_cluster_username
           type: string
           label: "AWX Username"

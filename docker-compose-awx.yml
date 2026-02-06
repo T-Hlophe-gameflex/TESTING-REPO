@@ -1,0 +1,85 @@
+---
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    container_name: awx-postgres
+    environment:
+      POSTGRES_DB: awx
+      POSTGRES_USER: awx
+      POSTGRES_PASSWORD: awxpass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - awx
+
+  redis:
+    image: redis:7
+    container_name: awx-redis
+    networks:
+      - awx
+
+  awx_web:
+    image: ansible/awx:24.6.1
+    container_name: awx-web
+    hostname: awxweb
+    user: root
+    restart: unless-stopped
+    ports:
+      - "8081:8052"
+    environment:
+      SECRET_KEY: awxsecret
+      DATABASE_USER: awx
+      DATABASE_PASSWORD: awxpass
+      DATABASE_NAME: awx
+      DATABASE_PORT: 5432
+      DATABASE_HOST: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AWX_ADMIN_USER: admin
+      AWX_ADMIN_PASSWORD: Cloudflare@2025
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - awx
+    volumes:
+      - awx_projects:/var/lib/awx/projects
+      - awx_job_output:/var/lib/awx/job_output
+
+  awx_task:
+    image: ansible/awx:24.6.1
+    container_name: awx-task
+    hostname: awx
+    user: root
+    restart: unless-stopped
+    environment:
+      SECRET_KEY: awxsecret
+      DATABASE_USER: awx
+      DATABASE_PASSWORD: awxpass
+      DATABASE_NAME: awx
+      DATABASE_PORT: 5432
+      DATABASE_HOST: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      AWX_ADMIN_USER: admin
+      AWX_ADMIN_PASSWORD: Cloudflare@2025
+    depends_on:
+      - postgres
+      - redis
+      - awx_web
+    networks:
+      - awx
+    volumes:
+      - awx_projects:/var/lib/awx/projects
+      - awx_job_output:/var/lib/awx/job_output
+
+networks:
+  awx:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  awx_projects:
+  awx_job_output:

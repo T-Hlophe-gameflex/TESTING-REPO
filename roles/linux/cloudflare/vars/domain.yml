@@ -1,5 +1,4 @@
 ---
-
 cloudflare_domain_ssl:
   universal_ssl_enabled: true
   custom_certificates: []
@@ -92,7 +91,6 @@ cloudflare_domain_performance:
   compression:
     brotli: true
     gzip: true
-  
   early_hints: true
   http2: true
   http3: true

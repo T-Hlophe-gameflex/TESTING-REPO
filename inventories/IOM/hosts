@@ -17,7 +17,7 @@ cloudflare
 sem-001-iom.iom.iforium.com ansible_host=10.50.108.35
 
 [cloudflare]
-sem-001-iom.iom.iforium.com ansible_host=10.50.108.35
+localhost ansible_connection=local
 
 [kafka_broker]
 kaf-201-iom.iom.iforium.com ansible_host=10.50.103.90

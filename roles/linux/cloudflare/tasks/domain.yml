@@ -216,7 +216,7 @@
 - name: cloudflare domain | Display dry-run origin settings
   ansible.builtin.debug:
     msg:
-      - "🌐 DRY-RUN: Would CONFIGURE origin server settings:"
+      - "  DRY-RUN: Would CONFIGURE origin server settings:"
       - "  True Client IP Header: {{ 'ON' if cloudflare_domain_origin.true_client_ip_header else 'OFF' }}"
       - "  Always Online: {{ 'ON' if cloudflare_domain_origin.always_online else 'OFF' }}"
       - "  Origin Error Page Pass Thru: {{ 'ON' if cloudflare_domain_origin.origin_error_page_pass_thru else 'OFF' }}"

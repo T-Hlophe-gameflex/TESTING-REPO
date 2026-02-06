@@ -72,9 +72,12 @@
   ansible.builtin.uri:
     url: "https://api.cloudflare.com/client/v4/zones?name={{ target_zone_name }}"
     method: GET
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key}
+      }}
     return_content: true
     validate_certs: true
     status_code: [200]
@@ -115,9 +118,12 @@
   ansible.builtin.uri:
     url: "https://api.cloudflare.com/client/v4/zones/{{ cloudflare_zone_id }}/dns_records?type={{ item.type }}&name={{ target_zone_name if item.name == '@' else item.name ~ '.' ~ target_zone_name }}"
     method: GET
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key}
+      }}
     return_content: true
     validate_certs: true
     status_code: [200]
@@ -177,10 +183,12 @@
         '/' ~ item.1.json.result[0].id if (item.1 is defined and item.1.json is defined and item.1.json.result | length > 0) else ''
       }}
     method: "{{ 'PUT' if (item.1 is defined and item.1.json is defined and item.1.json.result | length > 0) else 'POST' }}"
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        ({'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'})
+      }}
     body_format: json
     body: >-
       {{

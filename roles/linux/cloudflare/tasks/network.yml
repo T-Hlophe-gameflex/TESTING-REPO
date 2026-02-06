@@ -66,7 +66,7 @@
 - name: cloudflare network | Display dry-run network settings
   ansible.builtin.debug:
     msg:
-      - "⚙️  DRY-RUN: Would CONFIGURE network settings:"
+      - "  DRY-RUN: Would CONFIGURE network settings:"
       - "  IPv6: {{ 'ON' if cloudflare_network_settings.ipv6 else 'OFF' }}"
       - "  WebSockets: {{ 'ON' if cloudflare_network_settings.websockets else 'OFF' }}"
       - "  Pseudo IPv4: {{ cloudflare_network_settings.pseudo_ipv4 | upper }}"
