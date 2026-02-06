@@ -13,48 +13,62 @@ cloudflare_domain_argo:
   smart_routing: true
 
 cloudflare_domain_cache:
-  cache_rules:
-    - description: "Bypass cache for test pages"
-      expression: '(http.request.uri.path contains "TestPage.html")'
-      action: "set_cache_settings"
-      action_parameters:
-        cache: false
-        browser_ttl:
-          mode: "override_origin"
-          default: 30
+  page_rules:
+    - priority: 1
+      status: "active"
+      targets:
+        - target: "url"
+          constraint:
+            operator: "matches"
+            value: "*.{{ platform_domain }}/*/*TestPage.html*"
+      actions:
+        - id: "browser_cache_ttl"
+          value: 30
+        - id: "cache_level"
+          value: "bypass"
     
-    - description: "Bypass cache for gamelaunch test pages"
-      expression: '(http.request.uri.path eq "/gamelaunch/v1/testPage.html")'
-      action: "set_cache_settings"
-      action_parameters:
-        cache: false
-        browser_ttl:
-          mode: "override_origin"
-          default: 30
+    - priority: 2
+      status: "active"
+      targets:
+        - target: "url"
+          constraint:
+            operator: "matches"
+            value: "https://*.{{ platform_domain }}/gamelaunch/v1/testPage.html*"
+      actions:
+        - id: "browser_cache_ttl"
+          value: 30
+        - id: "cache_level"
+          value: "bypass"
     
-    - description: "Cache gamelaunch express JS files"
-      expression: '(http.request.uri.path contains "/gamelaunch/express/" and http.request.uri.path.extension eq "js")'
-      action: "set_cache_settings"
-      action_parameters:
-        cache: true
-        edge_ttl:
-          mode: "override_origin"
-          default: 300
-        browser_ttl:
-          mode: "override_origin"
-          default: 300
+    - priority: 3
+      status: "active"
+      targets:
+        - target: "url"
+          constraint:
+            operator: "matches"
+            value: "*.{{ platform_domain }}/gamelaunch/express/*.js*"
+      actions:
+        - id: "browser_cache_ttl"
+          value: 300
+        - id: "cache_level"
+          value: "ignore_query_string"
+        - id: "edge_cache_ttl"
+          value: 300
     
-    - description: "Cache all HTML files"
-      expression: '(http.request.uri.path.extension eq "html")'
-      action: "set_cache_settings"
-      action_parameters:
-        cache: true
-        edge_ttl:
-          mode: "override_origin"
-          default: 300
-        browser_ttl:
-          mode: "override_origin"
-          default: 300
+    - priority: 4
+      status: "active"
+      targets:
+        - target: "url"
+          constraint:
+            operator: "matches"
+            value: "*.{{ platform_domain }}/*/*.html"
+      actions:
+        - id: "browser_cache_ttl"
+          value: 300
+        - id: "cache_level"
+          value: "cache_everything"
+        - id: "edge_cache_ttl"
+          value: 300
 
 cloudflare_domain_security:
   waf:
