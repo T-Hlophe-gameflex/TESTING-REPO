@@ -84,7 +84,7 @@
     cloudflare_network_health_checks: "{{ cloudflare_network_health_checks | default([]) + [health_check_item] }}"
   vars:
     health_check_item:
-      name: "{{ item.key }}-health-check"
+      name: "{{ item.key }}_{{ platform_id | lower }}"
       address: "{{ item.key }}-{{ platform_id | lower }}.{{ platform_domain }}"
       description: "{{ item.key | title }} service health monitoring"
       type: "{{ cloudflare_network_health_checks_defaults.type }}"
