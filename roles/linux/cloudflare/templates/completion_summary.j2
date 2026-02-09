@@ -16,10 +16,10 @@
 - "   Domain settings (SSL, cache, Argo, DNSSEC)"
 {% endif %}
 {% if cloudflare_scope | default('dns') == 'network' %}
-- "   Network settings (health checks, IP geolocation)"
+- "   Network settings (health checks)"
 {% endif %}
 {% if cloudflare_scope | default('dns') == 'notifications' %}
-- "   Notification settings (email and webhook alerts)"
+- "   Notification settings (email notifications )"
 {% endif %}
 - ""
 - "Verify your changes:"
