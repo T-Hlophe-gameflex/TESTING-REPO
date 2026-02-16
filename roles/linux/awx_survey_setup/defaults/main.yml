@@ -1,6 +1,6 @@
 ---
 awx_host: "http://{{ groups['ansible'][0] }}:{{ hostvars[groups['ansible'][0]]['ansible_port'] | default(80) }}"
-awx_username: "admin"
+awx_username: "awxcloudflare"
 awx_validate_certs: true
 awx_organization: "{{ awx_organization_override | default('Default') }}"
 awx_project_name: "Cloudflare-DevOps"
