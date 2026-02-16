@@ -29,11 +29,10 @@
 - name: cloudflare | Validate required variables
   ansible.builtin.assert:
     that:
-      - cloudflare_api_email is defined and cloudflare_api_email != ""
-      - cloudflare_api_key is defined and cloudflare_api_key != ""
+      - cloudflare_api_token is defined and cloudflare_api_token != "" or (cloudflare_api_email is defined and cloudflare_api_email != "" and cloudflare_api_key is defined and cloudflare_api_key != "")
       - cloudflare_account_id is defined and cloudflare_account_id != ""
       - ticket_number is defined and ticket_number != ""
-    fail_msg: "Missing required variables: cloudflare_api_email, cloudflare_api_key, cloudflare_account_id, or ticket_number"
+    fail_msg: "Missing required variables: cloudflare_api_token (or cloudflare_api_email + cloudflare_api_key), cloudflare_account_id, or ticket_number"
     success_msg: "✓ Required API credentials validated"
   tags: cloudflare_configuration
 
@@ -173,13 +172,10 @@
 - name: cloudflare validation | Validate required variables
   ansible.builtin.assert:
     that:
-      - cloudflare_api_email is defined
-      - cloudflare_api_email != ""
-      - cloudflare_api_key is defined
-      - cloudflare_api_key != ""
+      - cloudflare_api_token is defined and cloudflare_api_token != "" or (cloudflare_api_email is defined and cloudflare_api_email != "" and cloudflare_api_key is defined and cloudflare_api_key != "")
       - cloudflare_account_id is defined
       - cloudflare_account_id != ""
-    fail_msg: "Missing required Cloudflare API credentials"
+    fail_msg: "Missing required Cloudflare API credentials (need cloudflare_api_token or cloudflare_api_email + cloudflare_api_key)"
     success_msg: "Cloudflare credentials are defined"
   tags: cloudflare_configuration
 
