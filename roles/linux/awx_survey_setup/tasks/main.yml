@@ -184,6 +184,8 @@
     controller_username: "{{ awx_username }}"
     controller_password: "{{ awx_password }}"
     validate_certs: "{{ awx_validate_certs }}"
+  failed_when: false
+  register: credential_type_result
 
 - name: Create Cloudflare credential
   awx.awx.credential:

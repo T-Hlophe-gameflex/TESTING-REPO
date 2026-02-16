@@ -1,4 +1,6 @@
 ---
+cloudflare_api_url: "https://api.cloudflare.com/client/v4"
+
 default_platform_domain: "iforium.com"
 default_location: "Global"
 default_region: "Global"

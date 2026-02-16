@@ -4,10 +4,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones?name={{ effective_zone_name }}"
     method: GET
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     return_content: yes
     status_code: 200
   register: _zone_lookup
@@ -39,10 +41,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/ssl/universal/settings"
     method: GET
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     status_code: 200
     return_content: true
   register: _universal_ssl_status
@@ -72,10 +76,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/ssl/universal/settings"
     method: PATCH
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     body_format: json
     body:
       enabled: true
@@ -111,10 +117,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/argo/smart_routing"
     method: PATCH
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     body_format: json
     body:
       value: "{{ 'on' if cloudflare_domain_argo.enabled else 'off' }}"
@@ -135,10 +143,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/argo/tiered_caching"
     method: PATCH
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     body_format: json
     body:
       value: "{{ 'on' if cloudflare_domain_argo.tiered_caching else 'off' }}"
@@ -160,10 +170,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/rulesets/phases/http_request_cache_settings/entrypoint"
     method: PUT
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     body_format: json
     body:
       rules: "{{ cloudflare_domain_cache.cache_rules }}"
@@ -234,10 +246,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/settings/{{ item.key }}"
     method: PATCH
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     body_format: json
     body:
       value: "{{ item.value }}"
@@ -283,10 +297,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/dnssec"
     method: PATCH
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     body_format: json
     body:
       status: "{{ 'active' if cloudflare_domain_dnssec.enabled else 'disabled' }}"
@@ -322,10 +338,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/settings/opportunistic_onion"
     method: PATCH
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     body_format: json
     body:
       value: "{{ 'on' if cloudflare_domain_onion_routing.enabled else 'off' }}"
@@ -381,10 +399,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/purge_cache"
     method: POST
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     body_format: json
     body:
       files: "{{ cloudflare_domain_cache.purge_patterns }}"
@@ -427,10 +447,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/pagerules"
     method: GET
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     status_code: 200
     return_content: true
   register: _existing_page_rules
@@ -483,10 +505,12 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/zones/{{ cloudflare_zone_id }}/pagerules"
     method: POST
-    headers:
-      X-Auth-Email: "{{ cloudflare_api_email }}"
-      X-Auth-Key: "{{ cloudflare_api_key }}"
-      Content-Type: "application/json"
+    headers: >-
+      {{
+        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
+        if (cloudflare_api_token is defined and cloudflare_api_token != '')
+        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
+      }}
     body_format: json
     body:
       targets: "{{ item.targets }}"
