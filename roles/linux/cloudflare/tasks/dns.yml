@@ -188,7 +188,6 @@
     - cloudflare_zone_id is defined
     - cloudflare_dns_records is defined
     - cloudflare_dns_records | length > 0
-    - item.1 is defined
   tags:
     - cloudflare_configuration
     - cloudflare_dns
