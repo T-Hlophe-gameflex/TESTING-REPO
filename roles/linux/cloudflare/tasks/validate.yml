@@ -197,7 +197,9 @@
   retries: "{{ cloudflare_api_retries | default(3) }}"
   delay: "{{ cloudflare_api_delay | default(5) }}"
   until: _api_token_validation.status == 200
-  when: validate_api_token | default(true) | bool
+  when:
+    - validate_api_token | default(true) | bool
+    - not (cloudflare_dry_run | default(false) | bool)
   no_log: true
   tags: cloudflare_configuration
 
@@ -219,7 +221,9 @@
   retries: "{{ cloudflare_api_retries | default(3) }}"
   delay: "{{ cloudflare_api_delay | default(5) }}"
   until: _account_verification.status == 200
-  when: validate_api_token | default(true) | bool
+  when:
+    - validate_api_token | default(true) | bool
+    - not (cloudflare_dry_run | default(false) | bool)
   no_log: true
   tags: cloudflare_configuration
 
