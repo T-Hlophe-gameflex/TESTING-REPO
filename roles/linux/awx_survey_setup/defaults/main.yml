@@ -23,5 +23,8 @@ awx_template_name: "Cloudflare-Deployment"
 awx_playbook_path: "cloudflare.yml"
 survey_enabled: true
 ask_credential_on_launch: false  
+ask_verbosity_on_launch: false
+awx_verbosity: 2
+awx_execution_environment_name: "AWX EE (24.6.1)"
 cloudflare_credential_name: "Cloudflare-API-Token"
 cloudflare_api_url: "https://api.cloudflare.com/client/v4"
