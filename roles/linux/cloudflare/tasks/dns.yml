@@ -180,7 +180,7 @@
       - "  Proxied: {{ item.proxied | default(false) }}"
   loop: "{{ cloudflare_dns_records | default([]) }}"
   loop_control:
-    label: "{{ item.0.name }} ({{ item.0.type }})"
+    label: "{{ item.name }} ({{ item.type }})"
   when:
     - cloudflare_dry_run | default(false) | bool
     - cloudflare_zone_id is defined
