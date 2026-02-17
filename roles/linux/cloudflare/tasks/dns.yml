@@ -164,7 +164,9 @@
   when:
     - not (cloudflare_dry_run | default(false) | bool)
     - dns_record_lookup is defined
+    - dns_record_lookup is not skipped
     - dns_record_lookup.results is defined
+    - dns_record_lookup.results | length > 0
   tags:
     - cloudflare_configuration
     - cloudflare_dns
