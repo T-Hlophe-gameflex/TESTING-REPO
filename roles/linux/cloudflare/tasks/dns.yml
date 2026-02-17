@@ -88,20 +88,33 @@
     - target_zone_name is defined
     - cloudflare_dns_records is defined
     - cloudflare_dns_records | length > 0
+    - not (cloudflare_dry_run | default(false) | bool)
   tags:
     - cloudflare_configuration
     - cloudflare_dns
     - cloudflare_dns_zone_lookup
 
-- name: cloudflare dns | Set zone_id fact
+- name: cloudflare dns | Set zone_id fact (from API)
   ansible.builtin.set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - zone_lookup is defined
     - zone_lookup.json is defined
     - zone_lookup.json.result is defined
     - zone_lookup.json.result | length > 0
   no_log: true
+  tags:
+    - cloudflare_configuration
+    - cloudflare_dns
+    - cloudflare_dns_zone_lookup
+
+- name: cloudflare dns | Set mock zone_id for dry-run
+  ansible.builtin.set_fact:
+    cloudflare_zone_id: "dryrun-mock-zone-id-{{ target_zone_name | default('unknown') | hash('md5') }}"
+  when:
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is not defined
   tags:
     - cloudflare_configuration
     - cloudflare_dns
@@ -131,6 +144,7 @@
   loop: "{{ cloudflare_dns_records | default([]) }}"
   no_log: true
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_dns_records is defined
     - cloudflare_dns_records | length > 0

@@ -13,7 +13,9 @@
     return_content: yes
     status_code: 200
   register: _zone_lookup
-  when: cloudflare_scope | default('all') in ['all', 'domain', 'dns']
+  when:
+    - cloudflare_scope | default('all') in ['all', 'domain', 'dns']
+    - not (cloudflare_dry_run | default(false) | bool)
   tags:
     - cloudflare_configuration
     - cloudflare_domain
@@ -23,9 +25,20 @@
     cloudflare_zone_id: "{{ _zone_lookup.json.result[0].id }}"
   when: 
     - cloudflare_scope | default('all') in ['all', 'domain', 'dns']
+    - not (cloudflare_dry_run | default(false) | bool)
     - _zone_lookup is defined
     - _zone_lookup.json is defined
     - _zone_lookup.json.result | length > 0
+  tags:
+    - cloudflare_configuration
+
+- name: cloudflare domain | Set mock zone ID for dry-run
+  ansible.builtin.set_fact:
+    cloudflare_zone_id: "dryrun-mock-zone-id-{{ effective_zone_name | default('unknown') | hash('md5') }}"
+  when:
+    - cloudflare_scope | default('all') in ['all', 'domain', 'dns']
+    - cloudflare_dry_run | default(false) | bool
+    - cloudflare_zone_id is not defined
   tags:
     - cloudflare_configuration
     - cloudflare_domain
