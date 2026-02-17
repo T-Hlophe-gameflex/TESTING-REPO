@@ -64,6 +64,7 @@
     return_content: true
   register: _universal_ssl_status
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_domain_ssl.universal_ssl_enabled | default(true)
     - cloudflare_zone_id is defined
   tags:
@@ -143,6 +144,7 @@
     return_content: true
   register: _argo_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_domain_argo is defined
   failed_when: false  
@@ -169,6 +171,7 @@
     return_content: true
   register: _argo_tiered_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_domain_argo is defined
     - cloudflare_domain_argo.enabled
@@ -283,6 +286,7 @@
     label: "{{ item.key }}"
   register: _origin_settings_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_domain_origin is defined
   failed_when: false 
@@ -323,6 +327,7 @@
     return_content: true
   register: _dnssec_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_domain_dnssec is defined
     - cloudflare_domain_dnssec.enabled is defined
@@ -364,6 +369,7 @@
     return_content: true
   register: _onion_routing_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_domain_onion_routing is defined
     - cloudflare_domain_onion_routing.enabled is defined
@@ -425,6 +431,7 @@
     return_content: true
   register: _cache_purge_result
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_domain_cache.purge_patterns is defined
     - cloudflare_domain_cache.purge_patterns | length > 0
@@ -470,6 +477,7 @@
     return_content: true
   register: _existing_page_rules
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - _all_page_rules | length > 0
   tags:

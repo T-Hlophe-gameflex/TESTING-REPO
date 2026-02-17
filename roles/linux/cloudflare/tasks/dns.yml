@@ -162,6 +162,7 @@
   loop_control:
     label: "{{ item.item.name }}"
   when:
+    - not (cloudflare_dry_run | default(false) | bool)
     - dns_record_lookup is defined
     - dns_record_lookup.results is defined
   tags:
@@ -171,13 +172,13 @@
 - name: cloudflare dns | Display dry-run changes (no actual changes)
   ansible.builtin.debug:
     msg:
-      - " DRY-RUN: Would {{ 'UPDATE' if (item.1 is defined and item.1.json is defined and item.1.json.result | length > 0) else 'CREATE' }} DNS record:"
-      - "  Name: {{ target_zone_name if item.0.name == '@' else item.0.name ~ '.' ~ target_zone_name }}"
-      - "  Type: {{ item.0.type }}"
-      - "  Content: {{ item.0.content }}"
-      - "  TTL: {{ item.0.ttl | default(1) }}"
-      - "  Proxied: {{ item.0.proxied | default(false) }}"
-  loop: "{{ cloudflare_dns_records | default([]) | zip(dns_record_lookup.results | default([])) | list }}"
+      - " DRY-RUN: Would CREATE DNS record:"
+      - "  Name: {{ target_zone_name if item.name == '@' else item.name ~ '.' ~ target_zone_name }}"
+      - "  Type: {{ item.type }}"
+      - "  Content: {{ item.content }}"
+      - "  TTL: {{ item.ttl | default(1) }}"
+      - "  Proxied: {{ item.proxied | default(false) }}"
+  loop: "{{ cloudflare_dns_records | default([]) }}"
   loop_control:
     label: "{{ item.0.name }} ({{ item.0.type }})"
   when:
