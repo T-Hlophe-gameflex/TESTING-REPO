@@ -88,33 +88,20 @@
     - target_zone_name is defined
     - cloudflare_dns_records is defined
     - cloudflare_dns_records | length > 0
-    - not (cloudflare_dry_run | default(false) | bool)
   tags:
     - cloudflare_configuration
     - cloudflare_dns
     - cloudflare_dns_zone_lookup
 
-- name: cloudflare dns | Set zone_id fact (from API)
+- name: cloudflare dns | Set zone_id fact
   ansible.builtin.set_fact:
     cloudflare_zone_id: "{{ zone_lookup.json.result[0].id }}"
   when:
-    - not (cloudflare_dry_run | default(false) | bool)
     - zone_lookup is defined
     - zone_lookup.json is defined
     - zone_lookup.json.result is defined
     - zone_lookup.json.result | length > 0
   no_log: true
-  tags:
-    - cloudflare_configuration
-    - cloudflare_dns
-    - cloudflare_dns_zone_lookup
-
-- name: cloudflare dns | Set mock zone_id for dry-run
-  ansible.builtin.set_fact:
-    cloudflare_zone_id: "dryrun-mock-zone-id-{{ target_zone_name | default('unknown') | hash('md5') }}"
-  when:
-    - cloudflare_dry_run | default(false) | bool
-    - cloudflare_zone_id is not defined
   tags:
     - cloudflare_configuration
     - cloudflare_dns
@@ -144,7 +131,6 @@
   loop: "{{ cloudflare_dns_records | default([]) }}"
   no_log: true
   when:
-    - not (cloudflare_dry_run | default(false) | bool)
     - cloudflare_zone_id is defined
     - cloudflare_dns_records is defined
     - cloudflare_dns_records | length > 0
@@ -162,11 +148,8 @@
   loop_control:
     label: "{{ item.item.name }}"
   when:
-    - not (cloudflare_dry_run | default(false) | bool)
     - dns_record_lookup is defined
-    - dns_record_lookup is not skipped
     - dns_record_lookup.results is defined
-    - dns_record_lookup.results | length > 0
   tags:
     - cloudflare_configuration
     - cloudflare_dns
@@ -174,20 +157,21 @@
 - name: cloudflare dns | Display dry-run changes (no actual changes)
   ansible.builtin.debug:
     msg:
-      - " DRY-RUN: Would CREATE DNS record:"
-      - "  Name: {{ target_zone_name if item.name == '@' else item.name ~ '.' ~ target_zone_name }}"
-      - "  Type: {{ item.type }}"
-      - "  Content: {{ item.content }}"
-      - "  TTL: {{ item.ttl | default(1) }}"
-      - "  Proxied: {{ item.proxied | default(false) }}"
-  loop: "{{ cloudflare_dns_records | default([]) }}"
+      - " DRY-RUN: Would {{ 'UPDATE' if (item.1 is defined and item.1.json is defined and item.1.json.result | length > 0) else 'CREATE' }} DNS record:"
+      - "  Name: {{ target_zone_name if item.0.name == '@' else item.0.name ~ '.' ~ target_zone_name }}"
+      - "  Type: {{ item.0.type }}"
+      - "  Content: {{ item.0.content }}"
+      - "  TTL: {{ item.0.ttl | default(1) }}"
+      - "  Proxied: {{ item.0.proxied | default(false) }}"
+  loop: "{{ cloudflare_dns_records | default([]) | zip(dns_record_lookup.results | default([])) | list }}"
   loop_control:
-    label: "{{ item.name }} ({{ item.type }})"
+    label: "{{ item.0.name }} ({{ item.0.type }})"
   when:
     - cloudflare_dry_run | default(false) | bool
     - cloudflare_zone_id is defined
     - cloudflare_dns_records is defined
     - cloudflare_dns_records | length > 0
+    - item.1 is defined
   tags:
     - cloudflare_configuration
     - cloudflare_dns

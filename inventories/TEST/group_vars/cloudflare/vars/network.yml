@@ -3,12 +3,12 @@
 
 cloudflare_network_health_checks_enabled: false
 cloudflare_network_health_checks:
-  - name: "gameflex_{{ platform_id | lower }}"
+  - name: "{{ platform_id | lower }}-gameflex-health"
     description: "Health check for {{ platform_id }} GameFlex platform"
     type: "https"
     address: "gameflex-{{ platform_id | lower }}.{{ platform_domain | default(cloudflare_zone_name) }}"
     port: 443
-    path: "/gamelaunch/api/v2.0/heartbeat/{{ platform_id }}/IFO/20/gameProviders"
+    path: "/health"
     interval: 60
     retries: 2
     timeout: 10
@@ -19,12 +19,12 @@ cloudflare_network_health_checks:
     follow_redirects: true
     allow_insecure: false
   
-  - name: "api_{{ platform_id | lower }}"
+  - name: "{{ platform_id | lower }}-api-health"
     description: "Health check for {{ platform_id }} API service"
     type: "https"
     address: "api-{{ platform_id | lower }}.{{ platform_domain | default(cloudflare_zone_name) }}"
     port: 443
-    path: "/gamelaunch/api/v2.0/heartbeat/{{ platform_id }}/IFO/20/gameProviders"
+    path: "/api/v1/health"
     interval: 120
     retries: 3
     timeout: 10

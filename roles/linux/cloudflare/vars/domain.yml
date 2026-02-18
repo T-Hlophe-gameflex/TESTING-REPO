@@ -13,6 +13,7 @@ cloudflare_domain_argo:
   smart_routing: true
 
 cloudflare_domain_cache:
+
   cache_rules:
     - description: "Bypass cache for test pages"
       expression: '(http.request.uri.path contains "TestPage.html")'

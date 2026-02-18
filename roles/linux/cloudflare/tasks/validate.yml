@@ -29,10 +29,11 @@
 - name: cloudflare | Validate required variables
   ansible.builtin.assert:
     that:
-      - cloudflare_api_token is defined and cloudflare_api_token != "" or (cloudflare_api_email is defined and cloudflare_api_email != "" and cloudflare_api_key is defined and cloudflare_api_key != "")
+      - cloudflare_api_email is defined and cloudflare_api_email != ""
+      - cloudflare_api_key is defined and cloudflare_api_key != ""
       - cloudflare_account_id is defined and cloudflare_account_id != ""
       - ticket_number is defined and ticket_number != ""
-    fail_msg: "Missing required variables: cloudflare_api_token (or cloudflare_api_email + cloudflare_api_key), cloudflare_account_id, or ticket_number"
+    fail_msg: "Missing required variables: cloudflare_api_email, cloudflare_api_key, cloudflare_account_id, or ticket_number"
     success_msg: "✓ Required API credentials validated"
   tags: cloudflare_configuration
 
@@ -172,10 +173,13 @@
 - name: cloudflare validation | Validate required variables
   ansible.builtin.assert:
     that:
-      - cloudflare_api_token is defined and cloudflare_api_token != "" or (cloudflare_api_email is defined and cloudflare_api_email != "" and cloudflare_api_key is defined and cloudflare_api_key != "")
+      - cloudflare_api_email is defined
+      - cloudflare_api_email != ""
+      - cloudflare_api_key is defined
+      - cloudflare_api_key != ""
       - cloudflare_account_id is defined
       - cloudflare_account_id != ""
-    fail_msg: "Missing required Cloudflare API credentials (need cloudflare_api_token or cloudflare_api_email + cloudflare_api_key)"
+    fail_msg: "Missing required Cloudflare API credentials"
     success_msg: "Cloudflare credentials are defined"
   tags: cloudflare_configuration
 
@@ -183,12 +187,10 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/user"
     method: GET
-    headers: >-
-      {{
-        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
-        if (cloudflare_api_token is defined and cloudflare_api_token != '')
-        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
-      }}
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
     return_content: yes
     status_code: 200
     timeout: "{{ cloudflare_api_timeout | default(30) }}"
@@ -197,9 +199,7 @@
   retries: "{{ cloudflare_api_retries | default(3) }}"
   delay: "{{ cloudflare_api_delay | default(5) }}"
   until: _api_token_validation.status == 200
-  when:
-    - validate_api_token | default(true) | bool
-    - not (cloudflare_dry_run | default(false) | bool)
+  when: validate_api_token | default(true) | bool
   no_log: true
   tags: cloudflare_configuration
 
@@ -207,12 +207,10 @@
   ansible.builtin.uri:
     url: "{{ cloudflare_api_url }}/accounts/{{ cloudflare_account_id }}"
     method: GET
-    headers: >-
-      {{
-        {'Authorization': 'Bearer ' ~ cloudflare_api_token, 'Content-Type': 'application/json'}
-        if (cloudflare_api_token is defined and cloudflare_api_token != '')
-        else {'X-Auth-Email': cloudflare_api_email, 'X-Auth-Key': cloudflare_api_key, 'Content-Type': 'application/json'}
-      }}
+    headers:
+      X-Auth-Email: "{{ cloudflare_api_email }}"
+      X-Auth-Key: "{{ cloudflare_api_key }}"
+      Content-Type: "application/json"
     return_content: yes
     status_code: 200
     timeout: "{{ cloudflare_api_timeout | default(30) }}"
@@ -221,9 +219,7 @@
   retries: "{{ cloudflare_api_retries | default(3) }}"
   delay: "{{ cloudflare_api_delay | default(5) }}"
   until: _account_verification.status == 200
-  when:
-    - validate_api_token | default(true) | bool
-    - not (cloudflare_dry_run | default(false) | bool)
+  when: validate_api_token | default(true) | bool
   no_log: true
   tags: cloudflare_configuration
 
